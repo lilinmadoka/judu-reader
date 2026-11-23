@@ -216,11 +216,41 @@ function importedDictionary(material) {
   return entries;
 }
 
+function validReadingMaterialId(id) {
+  return typeof id === "string" && id.length < 100 &&
+    /^(?:cet4_20\d{2}_\d{2}_[1-3](?:-[1-3])?|article_[a-z0-9]+(?:[-_][a-z0-9]+)*):(?:a|b|c1|c2|reading)$/.test(id);
+}
+
+function decodeReadingPositions(entries) {
+  if (!Array.isArray(entries) || entries.length > 50000) return [];
+  return entries.flatMap((pair) => {
+    if (!Array.isArray(pair) || pair.length !== 2) return [];
+    const [id, position] = pair;
+    if (!validReadingMaterialId(id) || !position || typeof position !== "object") return [];
+    const {sentence,text,word,paragraph,label,updatedAt} = position;
+    if (typeof sentence !== "string" || !/^s\d+$/.test(sentence) ||
+        typeof text !== "string" || !text.length || text.length > 10000 ||
+        !Number.isSafeInteger(word) || word < 0 || word >= text.length ||
+        !Number.isSafeInteger(paragraph) || paragraph < 1 ||
+        typeof label !== "string" || label.length > 32 ||
+        !Number.isSafeInteger(updatedAt) || updatedAt < 1) return [];
+    return [[id,{sentence,text,word,paragraph,label,updatedAt}]];
+  });
+}
+
+function mergeReadingPositions(positions, entries) {
+  for (const [id,value] of entries) {
+    if (value.updatedAt > (positions.get(id)?.updatedAt || 0)) positions.set(id,value);
+  }
+}
+
 function readingSnapshot() {
+  mergeReadingPositions(readingPositions,decodeReadingPositions(readLocal(readingStorage,{})?.readingPositions));
   return {
-    last:material.id, marks:[...marks], ratings:[...ratings], dueDates:[...dueDates],
+    last:readerArticleId || material.id, marks:[...marks], ratings:[...ratings], dueDates:[...dueDates],
     finished:[...finished], choices:[...choices],
     startedPassages:[...startedPassages], closeReadPassages:[...closeReadPassages],
+    readingPositions:[...readingPositions],
   };
 }
 
@@ -251,9 +281,12 @@ function renderLibrary() {
       const item = paper.sections[type];
       const id = paper.id + ":" + type;
       const progress = passageProgress(id);
+      const position = readingPositions.get(id);
+      const location = position?.label ? position.label + " 段" : position && "第 " + position.paragraph + " 段";
       return item ? ['<button type="button" class="ghost" data-open="' + id + '">' + esc(section.label) +
         '<small class="progress-tag" data-progress="' + progress + '">' + progressLabels[progress] +
-        (item.sourceOnly ? " · 仅原题" : "") + '</small></button>'] : [];
+        (item.sourceOnly ? " · 仅原题" : "") + '</small>' +
+        (position ? '<small class="continue-tag">继续阅读 · ' + esc(location) + '</small>' : '') + '</button>'] : [];
     }).join("");
     const original = paper.pdf ? '<a class="pdf-link" target="_blank" rel="noopener" href="' +
       esc(paperPdfHref(paper)) + '">整卷 PDF ↗</a>' : '';

@@ -229,8 +229,7 @@ function decodeReadingBackup(raw) {
   if (raw?.format !== "judu-study-backup" || raw.version !== 1 || !raw.reading ||
       typeof raw.reading !== "object" || Array.isArray(raw.reading)) error();
   const reading = raw.reading;
-  const ids = /^(?:cet4_20\d{2}_\d{2}_[1-3](?:-[1-3])?|article_[a-z0-9]+(?:[-_][a-z0-9]+)*):(?:a|b|c1|c2|reading)$/;
-  const validId = (id) => typeof id === "string" && id.length < 100 && ids.test(id);
+  const validId = validReadingMaterialId;
   const list = (name) => {
     const value = reading[name] ?? [];
     if (!Array.isArray(value) || value.length > 50000) error();
@@ -276,9 +275,12 @@ function decodeReadingBackup(raw) {
     if (values.some((id) => !validId(id))) error();
     return [name,values];
   }));
+  const resumeEntries = list("readingPositions");
+  const readingPositions = decodeReadingPositions(resumeEntries);
+  if (readingPositions.length !== resumeEntries.length) error();
   return {last:validId(reading.last) ? reading.last : "",marks:checkedMarks,choices:checkedChoices,
     ratings:pairs("ratings",(key,rating) => text(key) && Object.hasOwn(schedule,rating)),
-    dueDates:pairs("dueDates",(key,date) => text(key) && Number.isFinite(date)),...progress};
+    dueDates:pairs("dueDates",(key,date) => text(key) && Number.isFinite(date)),readingPositions,...progress};
 }
 
 function restoreReadingBackup(raw) {
@@ -296,10 +298,14 @@ function restoreReadingBackup(raw) {
   for (const name of ["finished","startedPassages","closeReadPassages"]) {
     restored[name] = [...new Set([...incoming[name],...current[name]])];
   }
-  const hasCurrentProgress = current.startedPassages.length || current.marks.length || current.choices.length;
+  const mergedPositions = new Map(current.readingPositions);
+  mergeReadingPositions(mergedPositions,incoming.readingPositions);
+  restored.readingPositions = [...mergedPositions];
+  const hasCurrentProgress = current.startedPassages.length || current.marks.length ||
+    current.choices.length || current.readingPositions.length;
   restored.last = hasCurrentProgress || !getMaterial(incoming.last) ? current.last : incoming.last;
   localStorage.setItem(readingStorage,JSON.stringify(restored));
-  for (const [name,collection] of Object.entries({marks,ratings,dueDates,choices})) {
+  for (const [name,collection] of Object.entries({marks,ratings,dueDates,choices,readingPositions})) {
     collection.clear();
     for (const [key,value] of restored[name]) collection.set(key,value);
   }
@@ -307,6 +313,9 @@ function restoreReadingBackup(raw) {
     collection.clear();
     for (const key of restored[name]) collection.add(key);
   }
+  readerArticleId = restored.last;
+  visitingSource = false;
+  savedReadingScroll = 0;
   renderMaterial(restored.last);
   renderLibrary();
   refreshAnchorButton();

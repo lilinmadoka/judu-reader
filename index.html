@@ -18,9 +18,9 @@
 .muted{color:var(--muted);font-size:12px}
 .tab,.plain,.primary,.ghost{border:1px solid transparent;border-radius:6px;background:transparent;padding:5px 10px}.tab{color:var(--muted)}.tab[aria-current="page"]{background:var(--pale);color:var(--green);font-weight:600}.plain:hover,.ghost:hover{background:var(--pale)}.primary{background:var(--green);color:#fff;border-color:var(--green)}.primary:hover{background:var(--green-deep);border-color:var(--green-deep)}.ghost{border-color:var(--line);color:var(--green);background:var(--paper)}.count{margin-left:3px}
 .workspace{--gutter:14px;display:grid;grid-template-columns:minmax(0,1fr) var(--gutter) var(--aside,340px);height:100dvh;overflow:hidden}
-.reader,.inspector{overflow:auto;min-width:0;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}.reader{background:var(--paper);scroll-padding-top:18px}
-.paper{max-width:790px;margin:auto;padding:26px clamp(34px,6vw,84px) 36px clamp(23px,4vw,54px)}.paper-head{border-bottom:1px solid var(--line);margin-bottom:20px;padding-bottom:14px}.meta{color:var(--muted);font-size:12px;margin:0 0 7px}.paper-title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}.paper-title-row button{font-size:12px;color:var(--green);flex:none}.paper h1{font:700 clamp(25px,3vw,37px)/1.05 var(--serif);letter-spacing:-.015em;margin:0 0 8px}.help{color:var(--muted);font-size:12px;margin:0}.help summary{cursor:pointer;width:fit-content}.help p{margin:7px 0 0}
-.paragraph{position:relative;margin:0 0 21px}.paragraph .english{font:18px/1.87 var(--serif);overflow-wrap:break-word;margin:0}.para-actions{position:absolute;left:calc(100% + 9px);top:2px;display:flex;flex-direction:column;gap:2px;align-items:flex-start}.para-actions button{min-height:24px;border:1px solid transparent;background:transparent;color:var(--green);white-space:nowrap;font-size:11px;border-radius:5px;padding:2px 5px}.para-actions button:hover,.para-actions button[aria-pressed="true"],.para-actions button[aria-expanded="true"]{background:var(--pale);border-color:var(--line)}
+.reader,.inspector{overflow:auto;min-width:0;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}.reader{--base-reading-size:18px;background:var(--paper);scroll-padding-top:18px}
+.paper{max-width:var(--reading-width,790px);margin:auto;padding:26px clamp(34px,6vw,84px) 36px clamp(23px,4vw,54px)}.paper-head{border-bottom:1px solid var(--line);margin-bottom:20px;padding-bottom:14px}.meta{color:var(--muted);font-size:12px;margin:0 0 7px}.paper-title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}.paper-title-row button{font-size:12px;color:var(--green);flex:none}.paper h1{font:700 clamp(25px,3vw,37px)/1.05 var(--serif);letter-spacing:-.015em;margin:0 0 8px}.help{color:var(--muted);font-size:12px;margin:0}.help summary{cursor:pointer;width:fit-content}.help p{margin:7px 0 0}
+.paragraph{position:relative;margin:0 0 21px}.paragraph .english{font:var(--reading-size,var(--base-reading-size))/1.87 var(--serif);overflow-wrap:break-word;margin:0}.para-actions{position:absolute;left:calc(100% + 9px);top:2px;display:flex;flex-direction:column;gap:2px;align-items:flex-start}.para-actions button{min-height:24px;border:1px solid transparent;background:transparent;color:var(--green);white-space:nowrap;font-size:11px;border-radius:5px;padding:2px 5px}.para-actions button:hover,.para-actions button[aria-pressed="true"],.para-actions button[aria-expanded="true"]{background:var(--pale);border-color:var(--line)}
 .word{cursor:help;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}.word:hover,.word.current{background:var(--pale)}.word.marked{background:transparent}
 #passage{position:relative;isolation:isolate}
 #passage .paragraph{z-index:1}
@@ -70,8 +70,8 @@
 .tooltip{position:fixed;z-index:8;background:var(--tip);color:#f3f8f6;pointer-events:none;padding:7px 11px;max-width:min(340px,calc(100vw - 16px));min-width:120px;border-radius:7px;box-shadow:0 6px 18px #0f1f1d33;font-size:13px}.tooltip b{display:block;font:700 15px/1.3 var(--serif);margin-bottom:2px}
 .toast{position:fixed;z-index:9;bottom:16px;left:50%;transform:translateX(-50%);background:var(--tip);color:#f3f8f6;padding:7px 13px;border-radius:6px;font-size:12px;pointer-events:none;max-width:calc(100vw - 25px)}
 .review{min-height:100dvh;padding:clamp(20px,6vw,64px) 16px 24px}.review-inner{margin:auto;max-width:650px}.review-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px}.review-head h1{font-size:21px;margin:0}.review-card{background:var(--paper);border:1px solid var(--line);padding:clamp(18px,4vw,35px);border-radius:11px;box-shadow:0 1px 2px #2a241a0a,0 12px 32px #2a241a0d}.review-card h2{font:700 clamp(31px,6vw,48px)/1.15 var(--serif);margin:0 0 15px;overflow-wrap:anywhere}.review-card h3{font-size:16px;margin:0 0 5px}.review-tools,.rating{display:flex;gap:7px;flex-wrap:wrap}.review-hint{font:19px/1.6 var(--serif);margin:13px 0;color:var(--ink)}.review-answer{margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}.review-answer p{margin:0 0 8px}.review-results{list-style:none;padding:0}.review-results li{padding:6px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}.review-results b{font-family:var(--serif);font-size:16px}
-@media (max-width:780px){.workspace{grid-template-columns:minmax(0,1fr) var(--gutter) var(--aside,max(228px,33vw))}.paper{padding-right:50px;padding-left:19px}.paragraph .english{font-size:17px}}
-@media (max-width:570px){.workspace{grid-template-columns:1fr;grid-template-rows:minmax(0,68fr) minmax(0,32fr)}.divider{display:none}.inspector{border-top:1px solid var(--line);padding:12px 18px}.paper{padding-top:15px}.paragraph .english{font-size:16px}}
+@media (max-width:780px){.workspace{grid-template-columns:minmax(0,1fr) var(--gutter) var(--aside,max(228px,33vw))}.paper{padding-right:46px;padding-left:19px}.reader{--base-reading-size:17px}}
+@media (max-width:570px){.workspace{grid-template-columns:1fr;grid-template-rows:minmax(0,68fr) minmax(0,32fr)}.divider{display:none}.inspector{border-top:1px solid var(--line);padding:12px 18px}.paper{padding-top:15px}.reader{--base-reading-size:16px}}
 
 /* Quiet section colors. Labels carry the meaning even when the colors look alike. */
 .explain {
@@ -167,6 +167,27 @@
   box-shadow:0 1px 2px #2a241a0f,0 6px 20px #2a241a14;
 }
 .study-float .tab {white-space:nowrap;border-radius:8px}
+.study-float[data-appearance-open]{z-index:11}
+.appearance-toggle {font:700 15px/1 var(--serif);color:var(--green)}
+.appearance-toggle[aria-expanded="true"]{background:var(--pale)}
+.appearance-menu{
+  position:absolute;right:0;bottom:calc(100% + 9px);width:min(236px,calc(100vw - 24px));
+  color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:11px;
+  box-shadow:0 6px 22px #2a241a20;padding:10px 12px;font-size:13px;
+}
+.appearance-menu label{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0}
+.appearance-menu select{font:inherit;color:var(--ink);max-width:120px;padding:4px 6px;background:var(--paper);
+  border:1px solid var(--line-strong);border-radius:5px}
+.appearance-menu label:last-child{border-top:1px solid var(--line);margin-top:5px;padding-top:9px}
+.appearance-menu input{accent-color:var(--green)}
+.study-clock[data-compact] .clock-dot,.study-clock[data-compact] .clock-time {display:none}
+.study-clock[data-compact] .clock-toggle{font-size:0;min-width:30px}
+.study-clock[data-compact] .clock-toggle::before{
+  content:"";width:15px;height:15px;display:block;border:1.5px solid currentColor;border-radius:50%;
+  background:linear-gradient(currentColor,currentColor) 50% 1px / 1.5px 5px no-repeat,
+    linear-gradient(currentColor,currentColor) 70% 54% / 5px 1.5px no-repeat;
+}
+.study-clock[data-compact][data-clock="running"] .clock-toggle{color:var(--green);background:var(--pale)}
 .review-float {
   position:fixed;right:var(--float-inset);bottom:calc(var(--float-inset) + 51px);z-index:7;
   border:1px solid var(--line);border-radius:11px;background:#fefdfae8;color:var(--green);
@@ -186,6 +207,15 @@
 .paper-meta-row .progress-tag[data-progress="complete"] {background:var(--pale)}
 .paper-sections .progress-tag {display:block;margin:0}
 .paper-sections [data-open] {text-align:left}
+.paper-sections .continue-tag{display:block;color:var(--green-deep);font-size:11px}
+.para-actions .resume-pin{display:grid;place-items:center;width:25px;color:#64706b}
+.resume-pin::before{
+  content:"";display:block;width:9px;height:13px;background:currentColor;
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%,0 0,20% 15%,20% 70%,50% 51%,80% 70%,80% 15%,20% 15%);
+}
+.resume-pin[data-saved]{color:var(--green-deep);background:var(--pale)}
+.resume-pin[data-saved]::before{clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
+.word.resume-target{background:#e4eee7;outline:1px solid #638e78;outline-offset:2px}
 .library-progress {font-size:13px;margin:5px 0 0}
 .anchor-target {outline:2px solid var(--focus);outline-offset:3px}
 .idle-dialog {width:min(360px,calc(100vw - 34px));border:1px solid var(--line);border-radius:15px;
@@ -358,14 +388,20 @@
     <button class="tab" id="library-tab" type="button">试卷库</button>
     <button class="tab" id="read-tab" type="button" aria-current="page">阅读</button>
     <button class="tab" id="match-tab" type="button">连线</button>
+    <button class="tab appearance-toggle" id="appearance-toggle" type="button" aria-label="阅读排版" aria-controls="appearance-menu" aria-expanded="false">Aa</button>
   </nav>
+  <section class="appearance-menu" id="appearance-menu" aria-label="阅读排版" hidden>
+    <label for="reading-size">正文字号<select id="reading-size"><option value="default">随窗口</option><option value="16">16</option><option value="18">18</option><option value="20">20</option><option value="22">22</option></select></label>
+    <label for="reading-width">正文行宽<select id="reading-width"><option value="620">窄</option><option value="790">标准</option><option value="940">宽</option></select></label>
+    <label for="clock-compact">收起计时<input id="clock-compact" type="checkbox"></label>
+  </section>
 </div>
 <button class="tab review-float anchor-float" id="reading-anchor" type="button" disabled
-  title="贴上第一张胶带后即可返回进度"><span aria-hidden="true">📎</span>回到进度</button>
+  title="贴上第一张胶带后即可返回"><span aria-hidden="true">📎</span>最新贴纸</button>
 <button class="tab review-float" id="review-tab" type="button" aria-label="复习">复习<span class="count" id="review-count" aria-hidden="true">0</span></button>
 <main>
   <div class="workspace" id="workspace">
-    <section class="reader" id="reader" aria-label="真题原文">
+    <section class="reader" id="reader" aria-label="真题原文" tabindex="0">
       <article class="paper">
         <header class="paper-head">
           <div class="paper-meta-row"><p class="meta" id="paper-meta"></p><span class="progress-tag" id="article-progress"></span></div>
@@ -373,7 +409,7 @@
           <details class="help">
             <summary>怎么试用</summary>
             <p>点单词查常用义，双击贴上或揭下胶带。想拆一句时，点段落旁的「选句」，再点高亮的句子。贴过胶带的词可以从侧边「复习」回看。</p>
-            <p>回形针回到最新贴胶带的位置。完成精读后可以在题目末尾标记进度。连续五分钟无操作，计时会暂停。</p>
+            <p>段边书签可以把续读位置停在这一段。「阅读」回到续读位置，回形针回到最新贴纸。Aa 调整正文字号和行宽。</p>
           </details>
         </header>
         <div id="passage"></div>
@@ -486,6 +522,7 @@ const startedPassages = new Set([
   ...[...marks.values()].map((mark) => mark.materialId),
 ]);
 const closeReadPassages = new Set(saved.closeReadPassages || []);
+const readingPositions = new Map(decodeReadingPositions(saved.readingPositions));
 const progressLabels = {unread:"未开始",reading:"精读中",complete:"已精读"};
 const passages = new Set();
 const schedule = {
@@ -517,6 +554,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":
 const wordPattern = /\p{L}+(?:[’'-]\p{L}+)*|\d+(?:\p{L}+)?/gu;
 const blankPattern = /___(\d+)___/g;
 const byWord = new Map(), byParagraph = new Map(), bySentence = new Map(), bySentencePosition = new Map();
+const readingOrder = new Map();
 let customDictionary = new Map();
 let drawTapeLayer, drawQuestionTape;
 let picking = null, activeLookup = null, completed = false;
@@ -539,6 +577,7 @@ function renderText(text) {
 function renderMaterial(id) {
   const next = getMaterial(id);
   if (!next) return false;
+  suspendReadingTracking();
   material = next;
   customDictionary = importedDictionary(next);
   picking = null;
@@ -547,6 +586,7 @@ function renderMaterial(id) {
   setInspectedSentence(null);
   readingPointer = null; selectionGesture = false; skipPairedDoubleClick = false;
   byWord.clear(); byParagraph.clear(); bySentence.clear(); bySentencePosition.clear();
+  readingOrder.clear();
   passages.clear();
   const knownExpressions = [...Object.keys(dictionary.phraseForms), ...customDictionary.keys()]
     .filter((form) => form.includes(" ")).map((form) => [form,undefined]);
@@ -554,6 +594,7 @@ function renderMaterial(id) {
     const display = displaySentence(sentence);
     const words = tokensFor(display);
     const item = {...sentence,display,words,context:sentence.phrases || [],phrases:[]};
+    readingOrder.set(sentence.id,readingOrder.size);
     bySentence.set(sentence.id,item);
     if (!byParagraph.has(item.paragraph)) byParagraph.set(item.paragraph,[]);
     byParagraph.get(item.paragraph).push(item);
@@ -607,6 +648,7 @@ function renderMaterial(id) {
   markState();
   refreshTapes();
   get("reader").scrollTop = 0;
+  refreshReadingBookmark();
   return true;
 }
 
@@ -631,6 +673,8 @@ function renderParagraph(number,sentences) {
   return '<section class="paragraph" data-paragraph="' + number + '" aria-label="' + esc(sectionName) + '">' +
     '<div class="para-actions">' + (material.sourceOnly ? '' :
       '<button type="button" data-pick="' + number + '" aria-label="' + esc(sectionName) + '选句" aria-pressed="false">选句</button>') +
+    '<button class="resume-pin" type="button" data-bookmark="' + number + '" aria-label="' + esc(sectionName) +
+    ' · 停在这里" title="停在这里"></button>' +
     (hasTranslation ? '<button type="button" data-translate="' + number + '" aria-label="展开' + esc(sectionName) + translation +
       '" aria-expanded="false" hidden>' + translation + '</button>' : '') + '</div>' +
     '<p class="english" lang="en">' + (label ? '<b>' + esc(label) + ') </b>' : '') +
@@ -673,7 +717,11 @@ function renderQuestions() {
   get("finish-below").onclick = finishPassage;
   drawQuestionTape = createTapeLayer(get("questions").firstElementChild);
   get("close-read-toggle").onclick = toggleCloseRead;
-  get("back-article").onclick = () => get("reader").scrollTo({top:0,behavior:"auto"});
+  get("back-article").onclick = () => {
+    flushReadingPosition();
+    suspendReadingTracking();
+    get("reader").scrollTo({top:0,behavior:"instant"});
+  };
 }
 
 function questionText(id,text) {
@@ -850,8 +898,8 @@ function refreshAnchorButton() {
   button.disabled = !mark;
   const source = mark && getMaterial(mark.materialId);
   button.title = source ? source.exam + " · " + source.info.label + " · " + mark.text :
-    "贴上第一张胶带后即可返回进度";
-  button.setAttribute("aria-label",mark ? "回到阅读进度 " + mark.text : "回到阅读进度");
+    "贴上第一张胶带后即可返回";
+  button.setAttribute("aria-label",mark ? "回到最新贴纸 " + mark.text : "回到最新贴纸");
 }
 function markedInMaterial() {
   return [...marks.values()].filter((target) => !target.contextOnly && target.materialId === material.id &&
@@ -1278,10 +1326,21 @@ get("reader").addEventListener("pointercancel",() => {
 });
 get("reader").addEventListener("click",(event) => {
   if (event.detail <= 1) skipPairedDoubleClick = false;
+  const bookmark = event.target.closest("[data-bookmark]");
+  if (bookmark) {
+    const section = bookmark.closest(".paragraph");
+    const reader = get("reader");
+    const words = section.querySelectorAll(".word");
+    const focused = inspectedSentence && section.contains(inspectedSentence) ? inspectedSentence.querySelector(".word") : null;
+    rememberReadingWord(focused || captureLine(reader,words)?.node || words[0],true);
+    return;
+  }
   const pick = event.target.closest("[data-pick]");
   if (pick) { selectParagraph(Number(pick.dataset.pick)); return; }
   const translation = event.target.closest("[data-translate]");
   if (translation && completed) {
+    flushReadingPosition();
+    suspendReadingTracking();
     const id = Number(translation.dataset.translate);
     if (passages.has(id)) passages.delete(id); else passages.add(id);
     translation.setAttribute("aria-expanded",String(passages.has(id)));
@@ -1337,10 +1396,13 @@ document.addEventListener("pointerdown",(event) => {
 document.addEventListener("click",animateDetails);
 get("reader").addEventListener("scroll",() => {
   if (divider.dataset.dragging === undefined) closePeek();
+  queueReadingPosition();
 },{passive:true});
 window.addEventListener("resize",() => placePeek(),{passive:true});
 
 function finishPassage() {
+  flushReadingPosition();
+  suspendReadingTracking();
   if (completed) {
     get("reader").scrollTo({top:0,behavior:"auto"});
     return;
@@ -1365,6 +1427,8 @@ function updateCompleted() {
   get("questions").querySelectorAll("[data-answer]").forEach((p) => { p.hidden = !completed; });
 }
 get("go-questions").onclick = () => {
+  flushReadingPosition();
+  suspendReadingTracking();
   startCurrentPassage();
   get("questions").scrollIntoView({block:"start",behavior:"auto"});
 };
@@ -1402,7 +1466,7 @@ function nextDue(days) {
   return date.getTime();
 }
 function locateMarkedSource(target) {
-  if (!openMaterial(target.materialId)) return null;
+  if (!openMaterial(target.materialId,{visit:true})) return null;
   const exact = bySentence.get(target.sentence);
   const source = exact?.display === target.sourceText ? exact :
     [...bySentence.values()].find((sentence) => sentence.display === target.sourceText);
@@ -1411,6 +1475,7 @@ function locateMarkedSource(target) {
   return word ? {source,word} : null;
 }
 function focusSourceWord(word) {
+  suspendReadingTracking();
   word.scrollIntoView({block:"center",inline:"nearest",behavior:"instant"});
   word.tabIndex = -1;
   word.focus({preventScroll:true});
@@ -1473,7 +1538,7 @@ function renderReview() {
     get("review-body").innerHTML = header + '<div class="review-card">'+result+
       '<div class="review-tools"><button class="ghost" id="continue-reading">返回原文</button>' +
       (cards.length ? '<button class="plain" id="review-all">再复习一轮</button>' : '') + '</div></div>';
-    get("continue-reading").onclick = () => showPage("read");
+    get("continue-reading").onclick = () => openMaterial(readerArticleId);
     if (get("review-all")) get("review-all").onclick = () => {
       manualReview = true;
       reviewedThisRound.clear();
@@ -1704,11 +1769,98 @@ if (typeof ResizeObserver === "function") {
   new ResizeObserver(() => drawMatchLines()).observe(get("match-board"));
 }
 
-let currentPage = "read", savedReadingScroll = 0;
+let currentPage = "read", readerArticleId = sampleId, visitingSource = false, savedReadingScroll = 0;
+let readingScrollTimer = 0, ignoreReadingScrollUntil = 0, readingScrollTop = 0, savedPin, resumeHighlightTimer = 0;
 const pageIds = {read:"workspace",review:"review",match:"matching",library:"library"};
+function suspendReadingTracking() {
+  clearTimeout(readingScrollTimer);
+  readingScrollTimer = 0;
+  ignoreReadingScrollUntil = performance.now()+240;
+}
+function visibleReadingLine() {
+  return captureLine(get("reader"),get("passage").querySelectorAll(".word"));
+}
+function refreshReadingBookmark() {
+  savedPin?.removeAttribute("data-saved");
+  const position = readingPositions.get(material.id);
+  savedPin = position ? get("passage").querySelector('[data-bookmark="'+position.paragraph+'"]') : null;
+  if (savedPin) savedPin.dataset.saved = "";
+}
+function resolveReadingPosition(position) {
+  const exact = bySentence.get(position.sentence);
+  const match = exact?.display === position.text && readingOrder.has(exact.id) ? exact :
+    material.sentences.map(({id}) => bySentence.get(id)).find((sentence) => sentence.display === position.text);
+  const sentence = match || byParagraph.get(position.paragraph)?.[0];
+  return sentence && {sentence,word:match ? Math.min(position.word,match.words.length-1) : 0};
+}
+function rememberReadingWord(node, explicit = false) {
+  const token = node && byWord.get(node.dataset.token);
+  if (!token || !readingOrder.has(token.sentence)) return;
+  if (!explicit && (visitingSource || material.id !== readerArticleId)) return;
+  mergeReadingPositions(readingPositions,decodeReadingPositions(readLocal(readingStorage,{})?.readingPositions));
+  const old = readingPositions.get(material.id);
+  const previous = old && resolveReadingPosition(old);
+  const sentence = bySentence.get(token.sentence);
+  if (!explicit && previous) {
+    const difference = readingOrder.get(token.sentence) - readingOrder.get(previous.sentence.id);
+    if (difference < 0 || (difference === 0 && token.index <= previous.word)) return;
+  }
+  if (explicit) {
+    suspendReadingTracking();
+    readerArticleId = material.id;
+    visitingSource = false;
+    savedReadingScroll = get("reader").scrollTop;
+  }
+  readingPositions.set(material.id,{
+    sentence:sentence.id,text:sentence.display,word:token.index,paragraph:sentence.paragraph,
+    label:sentence.paragraphLabel || "",updatedAt:Math.max(Date.now(),(old?.updatedAt || 0)+1),
+  });
+  startCurrentPassage(false);
+  saveReading();
+  refreshReadingBookmark();
+  if (explicit) flash("已记为续读位置");
+}
+function flushReadingPosition(saveFirst = false) {
+  const pending = Boolean(readingScrollTimer);
+  clearTimeout(readingScrollTimer);
+  readingScrollTimer = 0;
+  if (currentPage !== "read" || visitingSource || !material) return;
+  if (pending || (saveFirst && startedPassages.has(material.id) && !readingPositions.has(material.id))) {
+    rememberReadingWord(visibleReadingLine()?.node);
+  }
+}
+function queueReadingPosition() {
+  clearTimeout(readingScrollTimer);
+  readingScrollTimer = 0;
+  const top = get("reader").scrollTop;
+  const forward = top > readingScrollTop;
+  readingScrollTop = top;
+  if (!forward || currentPage !== "read" || visitingSource || dividerDrag || performance.now() < ignoreReadingScrollUntil) return;
+  readingScrollTimer = setTimeout(flushReadingPosition,180);
+}
+function resumeReadingPosition() {
+  const position = readingPositions.get(material.id);
+  const point = position && resolveReadingPosition(position);
+  const word = point && bySentencePosition.get(point.sentence.id+":"+point.word);
+  if (!word) return false;
+  suspendReadingTracking();
+  const reader = get("reader");
+  reader.scrollTop += word.getBoundingClientRect().top-reader.getBoundingClientRect().top-Math.min(120,reader.clientHeight*.24);
+  closePeek();
+  clearTimeout(resumeHighlightTimer);
+  reader.querySelector(".resume-target")?.classList.remove("resume-target");
+  word.classList.add("resume-target");
+  resumeHighlightTimer = setTimeout(() => word.classList.remove("resume-target"),1500);
+  return true;
+}
 function showPage(page) {
   if (currentPage === page) return;
-  if (currentPage === "read") savedReadingScroll = get("reader").scrollTop;
+  if (currentPage === "read" && !visitingSource) {
+    flushReadingPosition(true);
+    savedReadingScroll = get("reader").scrollTop;
+  }
+  setAppearanceOpen(false);
+  get("appearance-toggle").hidden = page !== "read";
   currentPage = page;
   for (const [kind,id] of Object.entries(pageIds)) {
     get(id).hidden = kind !== page;
@@ -1729,18 +1881,31 @@ function showPage(page) {
     renderLibrary();
     smoothIn(get("library").querySelector(".library-inner"),{distance:5,duration:175});
   } else {
-    get("reader").scrollTop = savedReadingScroll;
     restoreAside();
     refreshTapes();
   }
 }
-function openMaterial(id) {
-  if (material.id !== id) {
-    if (!renderMaterial(id)) return false;
-    savedReadingScroll = 0;
-    saveReading();
+function openMaterial(id,{visit = false} = {}) {
+  const wasReading = currentPage === "read";
+  const wasVisiting = visitingSource;
+  const changed = material.id !== id;
+  if (!wasVisiting && wasReading && (changed || visit)) {
+    flushReadingPosition(true);
+    savedReadingScroll = get("reader").scrollTop;
+  } else if (!visit) {
+    flushReadingPosition();
   }
+  if (changed && !renderMaterial(id)) return false;
+  visitingSource = visit;
   showPage("read");
+  if (visit) return true;
+  if (readerArticleId !== id) savedReadingScroll = 0;
+  readerArticleId = id;
+  if (!resumeReadingPosition() && (changed || wasVisiting || !wasReading)) {
+    suspendReadingTracking();
+    get("reader").scrollTop = savedReadingScroll;
+  }
+  saveReading();
   return true;
 }
 
@@ -1755,6 +1920,7 @@ function renderClock({phase,visible,elapsed}) {
   get("study-clock").dataset.clock = phase === "running" && visible ? "running" : phase === "idle" ? "idle" : "paused";
   const label = {idle:"开始",paused:"继续",running:"暂停",confirm:"继续"}[phase];
   if (get("clock-toggle").textContent !== label) get("clock-toggle").textContent = label;
+  get("clock-toggle").title = label+"计时 · "+time;
   if (phase === "confirm" && visible && !idleDialog.open) {
     closePeek();
     idleDialog.showModal();
@@ -1794,19 +1960,27 @@ for (const event of ["click","keydown"]) document.addEventListener(event,registe
 document.addEventListener("scroll",registerStudyActivity,{capture:true,passive:true});
 for (const event of ["wheel","touchmove"]) {
   document.addEventListener(event,registerStudyActivity,{capture:true,passive:true});
-  get("reader").addEventListener(event,() => startCurrentPassage(),{passive:true});
+  get("reader").addEventListener(event,() => {
+    ignoreReadingScrollUntil = 0;
+    startCurrentPassage();
+  },{passive:true});
 }
 document.addEventListener("visibilitychange",() => {
   syncStudyClock();
+  if (document.hidden) flushReadingPosition(true);
   if (!document.hidden && material) {
+    mergeReadingPositions(readingPositions,decodeReadingPositions(readLocal(readingStorage,{})?.readingPositions));
+    refreshReadingBookmark();
     markState();
     if (currentPage === "review") renderReview();
   }
 });
+window.addEventListener("pagehide",() => flushReadingPosition(true));
 setInterval(syncStudyClock,300);
 for (const page of Object.keys(pageIds)) {
   get(page+"-tab").onclick = () => showPage(page);
 }
+get("read-tab").onclick = () => openMaterial(readerArticleId);
 const library = get("library"), upload = get("paper-upload");
 get("paper-filter").oninput = renderLibrary;
 get("paper-list").onclick = (event) => {
@@ -1889,6 +2063,55 @@ function captureLine(pane, elements) {
   }
   return nearest;
 }
+function restoreCapturedLine(anchor) {
+  if (anchor?.node?.isConnected) anchor.pane.scrollTop += anchor.node.getBoundingClientRect().top - anchor.top;
+}
+
+const appearanceStorage = "judu-reader.appearance";
+const appearanceToggle = get("appearance-toggle"), appearanceMenu = get("appearance-menu");
+const fontInput = get("reading-size"), widthInput = get("reading-width"), compactInput = get("clock-compact");
+function setAppearanceOpen(open, focus = false) {
+  appearanceMenu.hidden = !open;
+  appearanceToggle.closest(".study-float").toggleAttribute("data-appearance-open",open);
+  appearanceToggle.setAttribute("aria-expanded",String(open));
+  if (focus) (open ? fontInput : appearanceToggle).focus({preventScroll:true});
+}
+function applyAppearance(preserveLine = false) {
+  const reader = get("reader");
+  const line = preserveLine && reader.scrollTop > 0
+    ? visibleReadingLine() || captureLine(reader,bySentencePosition.values()) : null;
+  if (preserveLine) {
+    flushReadingPosition();
+    suspendReadingTracking();
+  }
+  if (fontInput.value === "default") reader.style.removeProperty("--reading-size");
+  else reader.style.setProperty("--reading-size",fontInput.value+"px");
+  reader.style.setProperty("--reading-width",widthInput.value+"px");
+  get("study-clock").toggleAttribute("data-compact",compactInput.checked);
+  restoreCapturedLine(line);
+  if (preserveLine) {
+    refreshTapes();
+    placePeek();
+  }
+}
+const savedAppearance = readLocal(appearanceStorage,{}) || {};
+if ([...fontInput.options].some(({value}) => value === savedAppearance.font)) fontInput.value = savedAppearance.font;
+widthInput.value = [...widthInput.options].some(({value}) => value === savedAppearance.width) ? savedAppearance.width : "790";
+compactInput.checked = savedAppearance.compact === true;
+applyAppearance();
+appearanceToggle.onclick = () => setAppearanceOpen(appearanceMenu.hidden,appearanceMenu.hidden);
+appearanceMenu.onchange = (event) => {
+  applyAppearance(event.target !== compactInput);
+  const appearance = {font:fontInput.value,width:widthInput.value,compact:compactInput.checked};
+  try { localStorage.setItem(appearanceStorage,JSON.stringify(appearance)); } catch {}
+};
+document.addEventListener("pointerdown",(e) => {
+  if (!appearanceMenu.hidden && !appearanceMenu.contains(e.target) && !appearanceToggle.contains(e.target)) setAppearanceOpen(false);
+});
+appearanceMenu.addEventListener("keydown",(e) => {
+  if (e.key === "Escape") setAppearanceOpen(false,true);
+});
+
 function captureSplitPosition() {
   const reader = get("reader");
   const inspector = get("inspector");
@@ -1907,9 +2130,7 @@ function setAside(width, anchors = []) {
   divider.setAttribute("aria-valuemax",String(max));
   divider.setAttribute("aria-valuenow",String(px));
   divider.setAttribute("aria-valuetext","详解栏宽 "+px+" 像素");
-  for (const anchor of anchors) {
-    if (anchor?.node.isConnected) anchor.pane.scrollTop += anchor.node.getBoundingClientRect().top - anchor.top;
-  }
+  anchors.forEach(restoreCapturedLine);
   if (!dividerDrag) placePeek();
 }
 function rememberAside() {
@@ -1926,6 +2147,8 @@ function restoreAside() {
 }
 divider.onpointerdown = (e) => {
   if (e.button !== 0 || dividerDrag) return;
+  flushReadingPosition();
+  suspendReadingTracking();
   e.preventDefault();
   divider.focus({preventScroll:true});
   dividerDrag = {id:e.pointerId,origin:e.clientX,x:e.clientX,width:get("inspector").offsetWidth,
@@ -1951,26 +2174,35 @@ divider.onlostpointercapture = (e) => {
   paintDivider();
   dividerDrag = null;
   delete divider.dataset.dragging;
+  suspendReadingTracking();
   rememberAside();
 };
 divider.onkeydown = (e) => {
   if (!["ArrowLeft","ArrowRight","Home","End"].includes(e.key)) return;
   e.preventDefault();
+  flushReadingPosition();
+  suspendReadingTracking();
   const {min,max} = asideLimits();
   const width = get("inspector").offsetWidth;
   const next = {ArrowLeft:width+16,ArrowRight:width-16,Home:min,End:max}[e.key];
   setAside(next,captureSplitPosition());
   rememberAside();
 };
-window.addEventListener("resize",() => { if (currentPage === "read" && !dividerDrag) restoreAside(); },{passive:true});
-const restoreLastPassage = saved.last && !getMaterial(saved.last);
-renderMaterial(saved.last || sampleId) || renderMaterial(sampleId);
+window.addEventListener("resize",() => {
+  if (currentPage !== "read" || dividerDrag) return;
+  suspendReadingTracking();
+  restoreAside();
+},{passive:true});
+const restoreLastPassage = typeof saved.last === "string" && !getMaterial(saved.last);
+if (typeof saved.last === "string" && getMaterial(saved.last)) readerArticleId = saved.last;
+renderMaterial(readerArticleId);
 restoreAside();
+resumeReadingPosition();
 refreshAnchorButton();
 void loadStoredPapers().then(() => {
   catalogue = paperCatalogue();
-  if (restoreLastPassage && currentPage === "read" && material.id === sampleId && getMaterial(saved.last)) {
-    renderMaterial(saved.last);
+  if (restoreLastPassage && currentPage === "read" && readerArticleId === sampleId && !visitingSource && getMaterial(saved.last)) {
+    openMaterial(saved.last);
   }
   if (currentPage === "library") renderLibrary();
   refreshAnchorButton();
