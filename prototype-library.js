@@ -137,7 +137,7 @@ function decodePaperPack(raw, libraryPack = false) {
       else {
         options = list(q.options,tag + " options",4).map((option,i) => {
           if (!Array.isArray(option) || option[0] !== "ABCD"[i]) fail(tag,"选项须按 A 到 D 顺序。");
-          return [option[0],string(option[1],tag + " 选项")];
+          return [option[0],string(option[1],tag + " 选项"),string(option[2],tag + " 选项译文",true)];
         });
         if (options.length !== 4) fail(tag,"需要四个选项。");
       }
@@ -146,6 +146,7 @@ function decodePaperPack(raw, libraryPack = false) {
       const evidence = list(q.evidence,tag + " evidence",25,true);
       if (evidence.some((id) => !sentences.some((s) => s.id === id))) fail(tag,"证据句编号在该篇中找不到。");
       return {id:q.id,prompt:key === "a" ? "Blank " + number : string(q.prompt,tag + " prompt"),
+        zh:string(q.zh,tag + " 题干译文",true),
         options,answer,evidence,explanation:string(q.explanation,tag + " explanation",true)};
     });
     if (key !== "reading" && questions.length !== last - first + 1) fail(path,"题号必须完整覆盖 " + first + "–" + last + "。");

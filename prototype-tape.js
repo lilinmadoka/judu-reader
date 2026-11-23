@@ -134,14 +134,16 @@ function tapeSweep(placement,peeling,finish) {
       "% 52%," + clamp(x-slant) + "% 115%,0 115%)";
   };
   const end = Math.abs(slant) + 5;
-  const stops = peeling ? [100+end,96,71,33,-end] : [-end,5,30,71,100+end];
-  const easing = "cubic-bezier(.28,.66,.4,1)";
-  const timing = {duration:peeling ? 220 : 260,easing};
+  const stops = [-end,8,43,80,100+end];
+  if (peeling) stops.reverse();
+  const timing = {duration:peeling ? 245 : 285,delay:placement.line * 34,
+    easing:peeling ? "cubic-bezier(.46,.03,.56,1)" : "cubic-bezier(.22,.72,.27,1)",fill:"backwards"};
   const print = placement.print.animate(stops.map((x) => ({clipPath:clipAt(x,slant*.18)})),timing);
+  const skew = Math.atan(2*slant*placement.width/(100*placement.height));
   const edge = placement.edge.animate(stops.map((x,i) => ({
-    left:x + "%",opacity:i === 0 || i === stops.length-1 ? 0 : (peeling ? .92 : .72),
-    transform:"translateX(-48%) skewX(" + Math.atan(2*slant*placement.width/(100*placement.height)) +
-      "rad) scaleX(" + (peeling ? 1.08 : .73) + ")",
+    opacity:i === 0 || i === stops.length-1 ? 0 : (peeling ? .84 : .64),
+    transform:"translate3d(" + (x*placement.width/100).toFixed(2) + "px,0,0) translateX(-48%) skewX(" +
+      skew + "rad) scaleX(" + (i === 2 && peeling ? 1.18 : .82) + ")",
   })),timing);
   placement.effects = [print,edge];
   print.onfinish = () => {
@@ -186,7 +188,7 @@ function createTapeLayer(layer) {
           node.style.setProperty("--tape-opacity",style.opacity);
           node.style.setProperty("--tape-grain-position",style.grainPosition);
           node.style.setProperty("--tape-bloom",style.bloom);
-          placement = {node,print,edge,key,style,leaving:false};
+          placement = {node,print,edge,key,style,line:index,leaving:false};
           placements.set(id,placement);
         }
         const {node,style} = placement;

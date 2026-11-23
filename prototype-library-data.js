@@ -49,26 +49,31 @@ const BUILTIN_PAPERS = [
             "options": [
               [
                 "A",
-                "To hire more staff."
+                "To hire more staff.",
+                "为雇更多员工。"
               ],
               [
                 "B",
-                "To help commuters borrow books."
+                "To help commuters borrow books.",
+                "为方便通勤者借书。"
               ],
               [
                 "C",
-                "To save money."
+                "To save money.",
+                "为省钱。"
               ],
               [
                 "D",
-                "To deliver books."
+                "To deliver books.",
+                "为送书。"
               ]
             ],
             "answer": "B",
             "evidence": [
               "s1"
             ],
-            "explanation": "so that 后面直接给出了延长开放时间的目的。"
+            "explanation": "so that 后面直接给出了延长开放时间的目的。",
+            "zh": "图书馆为什么延长开放时间？"
           },
           {
             "id": "47",
@@ -76,25 +81,30 @@ const BUILTIN_PAPERS = [
             "options": [
               [
                 "A",
-                "Teachers."
+                "Teachers.",
+                "老师。"
               ],
               [
                 "B",
-                "Commuters."
+                "Commuters.",
+                "通勤者。"
               ],
               [
                 "C",
-                "Volunteers."
+                "Volunteers.",
+                "志愿者。"
               ],
               [
                 "D",
-                "Writers."
+                "Writers.",
+                "作家。"
               ]
             ],
             "answer": "C",
             "evidence": [
               "s2"
-            ]
+            ],
+            "zh": "谁帮助了来访者？"
           },
           {
             "id": "48",
@@ -102,25 +112,30 @@ const BUILTIN_PAPERS = [
             "options": [
               [
                 "A",
-                "On the first evening."
+                "On the first evening.",
+                "第一天晚上。"
               ],
               [
                 "B",
-                "On the second morning."
+                "On the second morning.",
+                "第二天早上。"
               ],
               [
                 "C",
-                "At noon."
+                "At noon.",
+                "中午。"
               ],
               [
                 "D",
-                "Before the opening."
+                "Before the opening.",
+                "开门之前。"
               ]
             ],
             "answer": "A",
             "evidence": [
               "s2"
-            ]
+            ],
+            "zh": "志愿者什么时候提供帮助？"
           },
           {
             "id": "49",
@@ -128,25 +143,30 @@ const BUILTIN_PAPERS = [
             "options": [
               [
                 "A",
-                "Jobs."
+                "Jobs.",
+                "工作。"
               ],
               [
                 "B",
-                "Keys."
+                "Keys.",
+                "钥匙。"
               ],
               [
                 "C",
-                "Tickets."
+                "Tickets.",
+                "票。"
               ],
               [
                 "D",
-                "Books."
+                "Books.",
+                "书。"
               ]
             ],
             "answer": "D",
             "evidence": [
               "s2"
-            ]
+            ],
+            "zh": "来访者在找什么？"
           },
           {
             "id": "50",
@@ -154,25 +174,30 @@ const BUILTIN_PAPERS = [
             "options": [
               [
                 "A",
-                "The visitors."
+                "The visitors.",
+                "来访者。"
               ],
               [
                 "B",
-                "The library."
+                "The library.",
+                "图书馆。"
               ],
               [
                 "C",
-                "The books."
+                "The books.",
+                "书。"
               ],
               [
                 "D",
-                "The volunteers."
+                "The volunteers.",
+                "志愿者。"
               ]
             ],
             "answer": "B",
             "evidence": [
               "s1"
-            ]
+            ],
+            "zh": "第一句中的 its 指什么？"
           }
         ],
         "glossary": [

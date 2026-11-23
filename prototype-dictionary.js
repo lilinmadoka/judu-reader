@@ -19,6 +19,7 @@ const neutralOverrides = new Map([
   ["plant-based",["形容词","以植物为基础的；以植物成分为主的"]],
   ["pro-social",["形容词","亲社会的；有益于他人的"]],
   ["raise awareness",["动词短语","提高意识；增进了解"]],
+  ["reparable",["形容词","可修补的；可补救的"]],
   ["résumé",["名词","简历；履历"]],
   ["single-family",["形容词","供一个家庭居住的"]],
   ["team-building",["名词","团队建设"]],
@@ -37,6 +38,9 @@ const negativeContractions = new Map(Object.entries({
   "weren't":"were", "won't":"will", "wouldn't":"would",
 }));
 const suffixContractions = {"m":"am","re":"are","ve":"have","ll":"will 或 shall","d":"would 或 had"};
+const supplementalForms = new Map([
+  ["canceling",[["cancel","现在分词"]]],
+]);
 
 function sourceRecord(head,row,type = "") {
   const [phonetic,senses,definitions] = row;
@@ -77,8 +81,9 @@ function offlineEntry(text,form) {
   if (override) direct = {head:form,senses:[override]};
   else if (Object.hasOwn(capitals,text)) direct = sourceRecord(text,capitals[text]);
   else if (Object.hasOwn(entries,form)) direct = sourceRecord(form,entries[form]);
-  const alternatives = Object.hasOwn(variants,form) ? variants[form].map(([root,type]) =>
-    sourceRecord(root,entries[root],type)) : [];
+  const roots = Object.hasOwn(variants,form) ? variants[form] : supplementalForms.get(form) || [];
+  const alternatives = roots.filter(([root]) => Object.hasOwn(entries,root))
+    .map(([root,type]) => sourceRecord(root,entries[root],type));
   if (direct) return {...direct,variants:alternatives};
   if (alternatives.length) {
     const [primary,...others] = alternatives;

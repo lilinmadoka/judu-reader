@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = (
     "index.html", "prototype-library-data.js", "prototype-library.js",
-    "prototype-transfer.js", "prototype-dictionary-data.js",
+    "prototype-transfer.js", "prototype-dictionary-data.js", "prototype-cet4-data.js",
     "prototype-word-family.js", "prototype-dictionary.js", "prototype-tape.js",
     "prototype-study-clock.js", "install-web.js", "manifest.webmanifest",
     "icon-192.png", "icon-512.png", "示例导入.json", "导入说明.md",

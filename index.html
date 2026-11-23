@@ -37,7 +37,7 @@
     linear-gradient(174deg,#fff5e164,transparent 42%,transparent 72%,#9257373b);
   background-position:var(--tape-grain-position,0 0),center,center;
   background-size:80px 24px,100% 100%,100% 100%;background-repeat:repeat,no-repeat,no-repeat}
-.tape-fold{left:-14%;top:-1px;bottom:-1px;width:clamp(4px,14%,10px);opacity:0;
+.tape-fold{left:0;top:-1px;bottom:-1px;width:clamp(4px,14%,10px);opacity:0;
   background:linear-gradient(90deg,transparent,#6d543c45 24%,#d3be9ba9 46%,#fffaf1ed 64%,#fffdf5ae 81%,transparent)}
 .hint-mark{color:inherit;background:var(--tape-color,#e8dec7);background:color-mix(in srgb,var(--tape-color,#e8dec7) 72%,var(--paper));padding-inline:.12em;
   box-decoration-break:clone;-webkit-box-decoration-break:clone}
@@ -185,6 +185,17 @@
 .choice-select {color:var(--ink);font:inherit;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:4px 7px}
 .blank {display:inline-block;white-space:nowrap;padding:0 3px;border-bottom:1px solid #97918a;color:var(--green);font:600 12px system-ui;vertical-align:baseline}
 .question-note {font-size:12px;margin:0 0 4px}
+.questions {position:relative}
+.questions > :not(.tape-layer) {position:relative}
+.question .question-choice {display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;gap:7px;font:16px/1.45 var(--serif)}
+.question .question-choice label {align-items:center}
+.question-translation {color:var(--ink-soft);margin:4px 0 7px;font:13px/1.6 var(--sans)}
+.question-translation summary {width:fit-content;cursor:pointer;color:var(--green)}
+.question-translation p,.question-translation ul {margin:3px 0 4px}
+.context-save {min-height:28px;text-decoration:underline;text-underline-offset:2px;font-size:12px;color:var(--green)}
+.lookup-parts,.review-filters {display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.review-filters button[aria-pressed="true"] {border-color:var(--green);color:var(--green);background:var(--pale)}
+.review-mask {margin:12px 0;min-height:50px;width:100%;text-align:left}
 .toast {bottom:62px}
 .study-clock {gap:6px;color:var(--ink-soft);padding:3px 5px 3px 9px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .clock-dot {width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--line-strong)}
@@ -388,6 +399,7 @@
 <script src="prototype-library.js"></script>
 <script src="prototype-transfer.js"></script>
 <script src="prototype-dictionary-data.js"></script>
+<script src="prototype-cet4-data.js"></script>
 <script src="prototype-word-family.js"></script>
 <script src="prototype-dictionary.js"></script>
 <script src="prototype-tape.js"></script>
@@ -415,7 +427,8 @@ const schedule = {
   hinted: { label: "看提示才想起", days: 1 },
   remembered: { label: "直接想起", days: 3 },
 };
-function markKey(target) { return [target.materialId,target.sentence,target.start,target.end].join(":"); }
+function wordSpanKey(target) { return [target.materialId,target.sentence,target.start,target.end].join(":"); }
+function markKey(target) { return wordSpanKey(target) + (target.contextual ? ":context:" + target.cardKey : ""); }
 function groupCards(positions) {
   const cards = new Map();
   for (const target of positions) {
@@ -438,12 +451,12 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":
 const wordPattern = /\p{L}+(?:[’'-]\p{L}+)*|\d+(?:\p{L}+)?/gu;
 const blankPattern = /___(\d+)___/g;
 const byWord = new Map(), byParagraph = new Map(), bySentence = new Map(), bySentencePosition = new Map();
-const lastLookupInSentence = new Map();
 let customDictionary = new Map();
-let drawTapeLayer;
+let drawTapeLayer, drawQuestionTape;
 let picking = null, activeLookup = null, completed = false;
 let readingPointer = null, selectionGesture = false, skipPairedDoubleClick = false;
 let reviewCard = null, hint = false, answer = false, toastTimer;
+let reviewFilter = "all";
 const postponed = new Set(), previouslyRetried = new Set();
 const reviewedThisRound = new Set();
 let manualReview = false;
@@ -464,7 +477,7 @@ function renderMaterial(id) {
   picking = null; activeLookup = null;
   readingPointer = null; selectionGesture = false; skipPairedDoubleClick = false;
   byWord.clear(); byParagraph.clear(); bySentence.clear(); bySentencePosition.clear();
-  lastLookupInSentence.clear(); passages.clear();
+  passages.clear();
   const knownExpressions = [...Object.keys(dictionary.phraseForms), ...customDictionary.keys()]
     .filter((form) => form.includes(" ")).map((form) => [form,undefined]);
   for (const sentence of material.sentences) {
@@ -497,8 +510,8 @@ function renderMaterial(id) {
   get("passage").innerHTML = '<div class="tape-layer" aria-hidden="true"></div>' +
     [...byParagraph].map(([number,sentences]) => renderParagraph(number,sentences)).join("");
   drawTapeLayer = createTapeLayer(get("passage").firstElementChild);
-  for (const el of get("passage").querySelectorAll("[data-token]")) bySentencePosition.set(el.dataset.token,el);
   renderQuestions();
+  for (const el of get("reader").querySelectorAll("[data-token]")) bySentencePosition.set(el.dataset.token,el);
   renderArticleProgress();
   const source = get("source");
   source.textContent = material.sourceNote || "篇目来源　" + material.exam + " · " + label;
@@ -559,29 +572,44 @@ function renderParagraph(number,sentences) {
 function renderQuestions() {
   const {first,last} = material.info;
   const bank = material.wordBank?.length ? '<div class="word-bank" lang="en">' + material.wordBank.map(({letter,word}) =>
-    '<span>' + esc(letter) + ') ' + esc(word) + '</span>').join("") + '</div>' : "";
+    '<span>' + esc(letter) + ') ' + questionText("bank-" + letter,word) + '</span>').join("") + '</div>' : "";
   const answered = choices.get(material.id) || {};
   const heading = material.questions.length ? '<h2>Questions ' + first + '–' + last + '</h2>' : "";
-  get("questions").innerHTML = heading + bank + material.questions.map((q) => {
+  get("questions").innerHTML = '<div class="tape-layer" aria-hidden="true"></div>' + heading + bank + material.questions.map((q) => {
     const pick = answered[q.id];
     let options;
     if (material.key === "c1" || material.key === "c2") {
-      options = q.options.map(([key,en]) => '<label><input type="radio" data-question="' + q.id + '" name="q' + q.id +
-        '" value="' + esc(key) + '"' + (key === pick ? " checked" : "") + '> ' + esc(key) + ') ' + esc(en) + '</label>').join("");
+      options = q.options.map(([key,en]) => '<div class="question-choice"><label><input type="radio" data-question="' + q.id +
+        '" name="q' + q.id + '" value="' + esc(key) + '" aria-label="' + esc(key + ") " + en) + '"' +
+        (key === pick ? " checked" : "") + '> <span aria-hidden="true">' + esc(key) + ')</span></label>' +
+        questionText("q-" + q.id + "-" + key,en) + '</div>').join("");
     } else {
       options = '<select class="choice-select" data-question="' + q.id + '" aria-label="第 ' + q.id + ' 题作答"><option value="">请选择</option>' +
         q.options.map(([key,en]) => '<option value="' + esc(key) + '"' + (key === pick ? " selected" : "") + '>' +
           esc(key) + (material.key === "a" ? ') ' + esc(en) : "") + '</option>').join("") + '</select>';
     }
-    return '<fieldset class="question" lang="en"><legend>' + q.id + '. ' + esc(q.prompt) + '</legend>' + options +
+    const translations = material.key === "c1" || material.key === "c2" ?
+      q.options.filter(([, , zh]) => zh).map(([key, , zh]) => '<li>' + esc(key + ") " + zh) + '</li>').join("") : "";
+    const translation = q.zh || translations ? '<details class="question-translation" lang="zh-CN">' +
+      '<summary aria-label="第 ' + q.id + ' 题译文">题目译文</summary>' + (q.zh ? '<p>' + esc(q.zh) + '</p>' : "") +
+      (translations ? '<ul>' + translations + '</ul>' : "") + '</details>' : "";
+    return '<fieldset class="question" lang="en"><legend>' + q.id + '. ' + questionText("q-" + q.id,q.prompt) + '</legend>' +
+      options + translation +
       '<div data-answer hidden><p class="reference" lang="zh-CN">' + (q.answer ? '参考答案 ' + esc(q.answer) : '未附参考答案') + '</p>' +
       (q.explanation ? '<p class="question-note" lang="zh-CN">' + esc(q.explanation) + '</p>' : '') + '</div></fieldset>';
   }).join("") + '<div class="finish"><button class="primary" id="finish-below">本篇做完</button>' +
     '<button class="ghost" type="button" id="close-read-toggle"></button>' +
     '<button class="plain" id="back-article">回到文章 ↑</button><p class="muted" id="finish-note"></p></div>';
   get("finish-below").onclick = finishPassage;
+  drawQuestionTape = createTapeLayer(get("questions").firstElementChild);
   get("close-read-toggle").onclick = toggleCloseRead;
   get("back-article").onclick = () => get("reader").scrollTo({top:0,behavior:"auto"});
+}
+
+function questionText(id,text) {
+  const sentence = {id,display:text,en:text,words:tokensFor(text),phrases:[],context:[]};
+  bySentence.set(id,sentence);
+  return '<span class="sentence" data-sentence="' + esc(id) + '">' + renderWordSentence(sentence) + '</span>';
 }
 
 function flash(message) {
@@ -670,7 +698,8 @@ function makeTarget(sentence, start, end, entry) {
   return {materialId:material.id,sentence:sentence.id,sourceText:sentence.display,start,end,entry,text,
     cardKey: entry?.sense || (entry?.meaning ? norm(entry.head)+"｜"+entry.meaning : norm(text)) };
 }
-function wordTarget(sentence, index) {
+function wordTarget(sentence, index, contextual = false) {
+  if (!contextual) return makeTarget(sentence,index,index);
   const key = norm(sentence.words[index].text);
   const single = sentence.phrases.find((phrase) => phrase.start === index && phrase.end === index);
   const entry = material.occurrenceOverrides?.[sentence.id]?.[index] ||
@@ -755,17 +784,20 @@ function refreshAnchorButton() {
   button.setAttribute("aria-label",mark ? "回到阅读进度 " + mark.text : "回到阅读进度");
 }
 function markedInMaterial() {
-  return [...marks.values()].filter((target) => target.materialId === material.id &&
+  return [...marks.values()].filter((target) => !target.contextOnly && target.materialId === material.id &&
     target.sourceText === bySentence.get(target.sentence)?.display);
 }
 function refreshTapes(changedKey,peeling) {
   if (!drawTapeLayer) return;
-  const targets = markedInMaterial().map((target) => ({
-    key:markKey(target),
+  const positions = new Map(markedInMaterial().map((target) => [wordSpanKey(target),target]));
+  const targets = [...positions.values()].map((target) => ({
+    key:wordSpanKey(target),
+    inQuestions:!target.sentence.startsWith("s"),
     first:bySentencePosition.get(target.sentence + ":" + target.start),
     last:bySentencePosition.get(target.sentence + ":" + target.end),
   }));
-  drawTapeLayer(targets,changedKey,peeling);
+  drawTapeLayer(targets.filter(({inQuestions}) => !inQuestions),changedKey,peeling);
+  drawQuestionTape?.(targets.filter(({inQuestions}) => inQuestions),changedKey,peeling);
 }
 function markState() {
   const positions = markedInMaterial();
@@ -799,10 +831,35 @@ function toggleMark(target) {
   }
   startCurrentPassage(false);
   markState();
-  refreshTapes(key,peeling);
+  refreshTapes(wordSpanKey(target),peeling);
   refreshAnchorButton();
   saveReading();
   if (activeLookup) renderLookup();
+}
+
+function adjacentTapes(target) {
+  const sameLine = markedInMaterial().filter((mark) => !mark.contextual && mark.sentence === target.sentence);
+  const selected = sameLine.find((mark) => markKey(mark) === markKey(target)) ||
+    sameLine.find((mark) => mark.start <= target.start && mark.end >= target.end);
+  if (!selected || selected.mergeParts) return {selected};
+  const neighbour = sameLine.find((mark) => mark.start === selected.end + 1) ||
+    sameLine.find((mark) => mark.end + 1 === selected.start);
+  if (!neighbour || neighbour.mergeParts) return {selected};
+  const pair = [selected,neighbour].sort((a,b) => a.start-b.start);
+  const sentence = bySentence.get(target.sentence);
+  const merged = makeTarget(sentence,pair[0].start,pair[1].end);
+  const available = hasOnlyWordGaps(merged.text) && !marks.has(markKey(merged));
+  return {selected,merge:available ? {...merged,mergeParts:pair} : null};
+}
+
+function replaceTape(previous,replacements) {
+  for (const target of previous) marks.delete(markKey(target));
+  for (const target of replacements) marks.set(markKey(target),target);
+  showLookup(replacements[0]);
+  refreshTapes(wordSpanKey(replacements[0]));
+  refreshAnchorButton();
+  saveReading();
+  flash(replacements.length === 1 ? "已合并两张贴纸" : "已拆回两张贴纸");
 }
 function explanation(topic, title, html) {
   return '<section class="explain" data-topic="' + topic + '"><h3>' + esc(title) + '</h3>' + html + '</section>';
@@ -893,7 +950,12 @@ function renderLookup(animate = false) {
   const target = activeLookup;
   const item = dictionaryEntry(target);
   const companion = findCompanion(target);
-  const companionItem = companion && dictionaryEntry(companion);
+  const {selected,merge} = adjacentTapes(target);
+  const sentence = bySentence.get(target.sentence);
+  const parts = target.start === target.end ? "" :
+    '<div class="lookup-parts" aria-label="逐词查义">' +
+    sentence.words.slice(target.start,target.end + 1).map((word,index) => '<button type="button" class="ghost" data-lookup-part="' +
+      (target.start + index) + '">' + esc(word.text) + '</button>').join("") + '</div>';
   const marked = marks.has(markKey(target));
   get("inspect-kind").textContent = target.start === target.end ? "词典 · 单词" : "词典 · 短语";
   updateInspector('<h2 lang="en">' + esc(item?.head || target.text) + '</h2>' +
@@ -903,22 +965,29 @@ function renderLookup(animate = false) {
           (target.start === target.end ? "原文 " + target.text + " → 原形 " + item.head : "原文写法 " + target.text) : "",
         item?.type].filter(Boolean).map(esc).join(" · ") + '</p>'
       : '') +
-    explanation("meaning","常用义项",dictionarySenses(item) + englishDetails(item)) +
+    parts + explanation("meaning","常用义项",dictionarySenses(item) + englishDetails(item)) +
     '<div class="inspect-actions"><button class="ghost" id="mark-entry">' + (marked ? "揭下胶带" : "贴上标记") + '</button>' +
     (marked ? memoryTag(memoryFor(target.cardKey)) : '') +
-    (companionItem ? '<button class="plain" id="lookup-companion">查搭配 ' + esc(companionItem.head) + '</button>' : '') + '</div>' +
+    (companion ? '<button class="plain" id="lookup-companion">查搭配 ' + esc(companion.text) + '</button>' : '') +
+    (merge ? '<button class="plain" id="merge-tape">合并贴纸</button>' : '') +
+    (selected?.mergeParts ? '<button class="plain" id="split-tape">拆回两张</button>' : '') + '</div>' +
     wordFormsPanel(item) + wordFormationPanel(target,item) + dictionaryExtras(item) +
     (item?.offline || item?.variants?.length ? '<small class="lex-source">ECDICT 离线词典</small>' : ''), animate);
   get("mark-entry").onclick = () => {
     toggleMark(target);
     get("mark-entry")?.focus({preventScroll:true});
   };
-  if (get("lookup-companion")) get("lookup-companion").onclick = () => { showLookup(companion); };
+  if (get("lookup-companion")) get("lookup-companion").onclick = () =>
+    showLookup(makeTarget(sentence,companion.start,companion.end));
+  for (const button of get("inspect-content").querySelectorAll("[data-lookup-part]")) {
+    button.onclick = () => showLookup(wordTarget(sentence,Number(button.dataset.lookupPart)));
+  }
+  if (merge) get("merge-tape").onclick = () => replaceTape(merge.mergeParts,[merge]);
+  if (selected?.mergeParts) get("split-tape").onclick = () => replaceTape([selected],selected.mergeParts);
 }
 function showLookup(target, anchor) {
   startCurrentPassage();
   activeLookup = target;
-  lastLookupInSentence.set(target.sentence,target);
   if (anchor) showPeek(target,anchor);
   else closePeek();
   markState();
@@ -962,6 +1031,7 @@ function inspectSentence(sentence) {
     return;
   }
   const translation = sentence.literal || sentence.zh;
+  const targets = contextualTargets(sentence);
   const text = sentence.en === sentence.display ? title :
     '<div class="analysis-block"><h2 class="sentence-title" lang="en">' + renderText(sentence.en) + '</h2>';
   updateInspector(text +
@@ -973,37 +1043,53 @@ function inspectSentence(sentence) {
     (sentence.steps?.length ? explanation("usage","怎样读这句",'<ol>' + sentence.steps.map((step) =>
       '<li>' + esc(step) + '</li>').join("") + '</ol>') : "") +
     (sentence.trap ? explanation("confusion","容易误读的地方",'<p>' + esc(sentence.trap) + '</p>') : "") +
-    sentenceVocabulary(sentence) +
+    sentenceVocabulary(targets) +
     (translation ? explanation("meaning",sentence.literal ? "单句直译" : "单句参考译文",
       '<p class="definition">' + esc(translation) + '</p>') : "") +
     (!(translation || sentence.context.length || sentence.grammar || sentence.gist || sentence.chunks?.length || sentence.steps?.length || sentence.trap) ?
       '<p class="muted">这一句暂未附解析。</p>' : '') + '</div>',true);
+  for (const button of get("inspect-content").querySelectorAll("[data-context-save]")) {
+    const target = targets[Number(button.dataset.contextSave)];
+    const updateLabel = () => {
+      const marked = marks.has(markKey(target));
+      button.textContent = marked ? "已记 · 撤销" : "记这条";
+      button.setAttribute("aria-pressed",String(marked));
+    };
+    updateLabel();
+    button.onclick = () => { toggleMark(target); updateLabel(); };
+  }
   get("inspector").scrollTop = 0;
   if (focusWasInside) focusButton?.focus({preventScroll:true});
 }
 
-function sentenceVocabulary(sentence) {
-  const candidates = [lastLookupInSentence.get(sentence.id)];
+function contextualTargets(sentence) {
+  const candidates = [];
   for (const phrase of sentence.phrases) candidates.push(makeTarget(sentence,phrase.start,phrase.end,phrase.entry));
-  sentence.words.forEach((_,index) => candidates.push(wordTarget(sentence,index)));
+  sentence.words.forEach((_,index) => candidates.push(wordTarget(sentence,index,true)));
   const entries = new Map();
   for (const target of candidates) {
-    if (target?.entry?.meaning && !entries.has(target.cardKey)) entries.set(target.cardKey,target);
+    if (target?.entry?.meaning && !entries.has(target.cardKey)) entries.set(target.cardKey,{...target,contextual:true});
   }
   for (const phrase of sentence.context) {
     const key = phrase.sense || norm(phrase.text) + "｜" + phrase.meaning;
-    if (!entries.has(key)) entries.set(key,{text:phrase.text,entry:{meaning:phrase.meaning,use:phrase.explanation}});
+    if (!entries.has(key) && sentence.words.length) entries.set(key,{
+      ...makeTarget(sentence,0,0,{head:phrase.text,meaning:phrase.meaning,use:phrase.explanation}),
+      text:phrase.text,cardKey:key,contextual:true,contextOnly:true,
+    });
   }
-  if (!entries.size) return "";
-  const list = (items) => '<ul class="sentence-words">' + items.map((target) =>
+  return [...entries.values()];
+}
+function sentenceVocabulary(values) {
+  if (!values.length) return "";
+  const list = (items,offset) => '<ul class="sentence-words">' + items.map((target,index) =>
     '<li><span class="sentence-word-head"><b lang="en">' + esc(target.text) + '</b> · ' +
     esc(target.entry.meaning) + '</span>' +
-    (target.entry.use ? '<p>' + esc(target.entry.use) + '</p>' : '') + '</li>'
+    (target.entry.use ? '<p>' + esc(target.entry.use) + '</p>' : '') +
+    '<button type="button" class="plain context-save" data-context-save="' + (offset + index) + '">记这条</button></li>'
   ).join("") + '</ul>';
-  const values = [...entries.values()];
   const extra = values.slice(2);
-  return explanation("usage","本句词语用法",list(values.slice(0,2)) +
-    (extra.length ? '<details class="sentence-more"><summary>展开其余词语</summary>' + list(extra) + '</details>' : ''));
+  return explanation("usage","本句词语用法",list(values.slice(0,2),0) +
+    (extra.length ? '<details class="sentence-more"><summary>展开其余词语</summary>' + list(extra,2) + '</details>' : ''));
 }
 
 function lookupSelection() {
@@ -1012,7 +1098,7 @@ function lookupSelection() {
   const range = selection.getRangeAt(0);
   const head = range.startContainer.parentElement?.closest(".sentence");
   const tail = range.endContainer.parentElement?.closest(".sentence");
-  if (!head || head !== tail || !get("passage").contains(head)) return;
+  if (!head || head !== tail || !get("reader").contains(head)) return;
   const selected = norm(selection.toString());
   const length = [...selected.matchAll(wordPattern)].length;
   if (length < 2) return;
@@ -1022,21 +1108,19 @@ function lookupSelection() {
     const first = bySentencePosition.get(sentence.id+":"+start);
     const last = bySentencePosition.get(sentence.id+":"+end);
     if (!range.intersectsNode(first) || !range.intersectsNode(last)) continue;
-    const known = sentence.phrases.find((phrase) => phrase.start === start && phrase.end === end);
-    const target = makeTarget(sentence,start,end,known?.entry);
+    const target = makeTarget(sentence,start,end);
     if (norm(target.text) !== selected) continue;
-    if (known || dictionaryEntry(target)) { showLookup(target,range); return; }
+    if (hasOnlyWordGaps(target.text)) { showLookup(target,range); return; }
   }
   closePeek();
-  flash("这个搭配暂未收录。想理解这段表达，可以用「选句」看原句解析。");
 }
 
-get("passage").addEventListener("pointerdown",(event) => {
+get("reader").addEventListener("pointerdown",(event) => {
   if (event.button !== 0) return;
   readingPointer = {id:event.pointerId,x:event.clientX,y:event.clientY};
   selectionGesture = false;
 });
-get("passage").addEventListener("pointerup",(event) => {
+get("reader").addEventListener("pointerup",(event) => {
   const from = readingPointer;
   readingPointer = null;
   selectionGesture = from?.id === event.pointerId &&
@@ -1045,11 +1129,11 @@ get("passage").addEventListener("pointerup",(event) => {
   if (!event.target.closest(".sentence")) return;
   setTimeout(lookupSelection,0);
 });
-get("passage").addEventListener("pointercancel",() => {
+get("reader").addEventListener("pointercancel",() => {
   readingPointer = null;
   selectionGesture = false;
 });
-get("passage").addEventListener("click",(event) => {
+get("reader").addEventListener("click",(event) => {
   if (event.detail <= 1) skipPairedDoubleClick = false;
   const pick = event.target.closest("[data-pick]");
   if (pick) { selectParagraph(Number(pick.dataset.pick)); return; }
@@ -1078,7 +1162,7 @@ get("passage").addEventListener("click",(event) => {
   const index = byWord.get(word.dataset.token).index;
   showLookup(wordTarget(sentence,index),word);
 });
-get("passage").addEventListener("dblclick",(event) => {
+get("reader").addEventListener("dblclick",(event) => {
   const word = event.target.closest("[data-token]");
   if (!word) return;
   if (skipPairedDoubleClick) { skipPairedDoubleClick = false; return; }
@@ -1089,7 +1173,7 @@ get("passage").addEventListener("dblclick",(event) => {
   window.getSelection()?.removeAllRanges();
   toggleMark(wordTarget(bySentence.get(sentence),index));
 });
-get("passage").addEventListener("keydown",(event) => {
+get("reader").addEventListener("keydown",(event) => {
   const s = event.target.closest(".sentence");
   if (!s || !["Enter"," "].includes(event.key)) return;
   const sentence = bySentence.get(s.dataset.sentence);
@@ -1153,9 +1237,11 @@ get("questions").onchange = (event) => {
   choices.set(material.id,savedChoices);
   saveReading();
 };
+get("questions").addEventListener("toggle",() => refreshTapes(),true);
 
 function reviewTapeStyle(target) { return ' style="--tape-color:' + tapeColor(markKey(target)) + '"'; }
 function reviewSentence(target) {
+  if (target.contextOnly) return renderText(target.sourceText);
   const tokens = tokensFor(target.sourceText);
   const first = tokens[target.start].char;
   const word = tokens[target.end];
@@ -1206,7 +1292,17 @@ get("reading-anchor").onclick = () => {
   setTimeout(() => match.word.classList.remove("anchor-target"),1300);
 };
 function renderReview() {
-  const cards = groupCards(marks.values());
+  const allCards = groupCards(marks.values());
+  const cards = allCards.filter(({target}) => {
+    if (reviewFilter === "cet4") {
+      const entry = dictionaryEntry(target);
+      return [norm(target.text),entry?.head,...(entry?.variants || []).map(({head}) => head)]
+        .some((head) => CET4_WORDS.has(head));
+    }
+    if (reviewFilter === "context") return Boolean(target.entry?.meaning);
+    if (reviewFilter === "phrases") return target.start !== target.end || norm(target.text).includes(" ");
+    return true;
+  });
   const eligible = (c) => manualReview ? !reviewedThisRound.has(c.key) : isDue(c.key);
   const available = cards.filter((c) => eligible(c) && !postponed.has(c.key));
   if (available.length === 0 && postponed.size) {
@@ -1214,8 +1310,11 @@ function renderReview() {
     for (const card of cards) if (eligible(card)) available.push(card);
   }
   if (!reviewCard || !available.some((card)=>card.key===reviewCard.key)) changeReviewCard(available[0]);
+  const filters = [["all","全部"],["cet4","四级词汇"],["phrases","短语"],["context","语境义"]];
   const header = '<header class="review-head"><h1>复习</h1><span class="muted">' + cards.length +
-    ' 张卡片 · ' + cards.filter((c) => isDue(c.key)).length + ' 项到期</span></header>';
+    ' 张卡片 · ' + cards.filter((c) => isDue(c.key)).length + ' 项到期</span></header>' +
+    '<div class="review-filters" aria-label="复习筛选">' + filters.map(([id,label]) => '<button type="button" class="ghost" data-review-filter="' +
+      id + '" aria-pressed="' + String(id === reviewFilter) + '">' + label + '</button>').join("") + '</div>';
   const card = reviewCard;
   if (!card) {
     manualReview = false;
@@ -1229,7 +1328,8 @@ function renderReview() {
           '<span class="review-status-text">' + memoryTag(state) + '<span class="muted">' + esc(next) + '</span>' +
           '<button class="plain review-jump" data-review-jump="' + index + '" aria-label="回原文看 ' + esc(c.target.text) + '">回原文 ↗</button></span></li>';
       }).join("") + '</ul>'
-      : '<h3>先从原文找一个想记的词</h3><p class="muted">双击单词贴上胶带，也可以划选短语，在右栏点「贴上标记」。</p>';
+      : allCards.length ? '<h3>这个筛选下暂时没有卡片</h3>' :
+        '<h3>先从原文找一个想记的词</h3><p class="muted">双击单词贴上胶带，也可以划选短语，在右栏点「贴上标记」。</p>';
     get("review-body").innerHTML = header + '<div class="review-card">'+result+
       '<div class="review-tools"><button class="ghost" id="continue-reading">返回原文</button>' +
       (cards.length ? '<button class="plain" id="review-all">再复习一轮</button>' : '') + '</div></div>';
@@ -1251,7 +1351,7 @@ function renderReview() {
   const heading = '<h2 lang="en">'+esc(target.text)+'</h2>' +
     (source ? '<p class="muted">' + esc(source.exam + " · " + source.info.label) + '</p>' : '');
   const tools = '<div class="review-tools"><button class="ghost" id="show-hint" aria-expanded="'+hint+'">'+(hint?'收起原句':'看原句')+'</button>' +
-    '<button class="primary" id="reveal-answer"'+(answer?' hidden':'')+'>看答案</button>' +
+    (answer ? '<button class="ghost" id="reveal-answer" aria-expanded="true">遮住中文</button>' : '') +
     (source ? '<button class="plain" id="review-source">回原文 ↗</button>' : '') + '</div>';
   const original = hint ? '<p class="review-hint" lang="en">' + reviewSentence(target) + '</p>' : '';
   const item = answer && !entry?.meaning ? dictionaryEntry(target) : null;
@@ -1259,11 +1359,12 @@ function renderReview() {
     (entry?.meaning ? explanation("meaning","语境释义",'<p><b>' + esc(entry.meaning) + '</b></p>') :
       explanation("meaning","常用义项",dictionarySenses(item)) + wordFormsPanel(item)) +
     entryExtras(entry) +
-    '<div class="rating">'+Object.entries(schedule).map(([key,value])=>'<button class="ghost" data-rating="'+key+'" data-memory="'+key+'">'+value.label+'</button>').join("")+'</div></div>' : '';
+    '<div class="rating">'+Object.entries(schedule).map(([key,value])=>'<button class="ghost" data-rating="'+key+'" data-memory="'+key+'">'+value.label+'</button>').join("")+'</div></div>' :
+    '<button type="button" class="ghost review-mask" id="reveal-answer" aria-expanded="false">想一想，再揭开中文</button>';
   get("review-body").innerHTML = header+'<div class="review-card">'+heading+tools+original+response+'</div>';
   get("show-hint").onclick = () => { hint=!hint; renderReview(); get("show-hint").focus(); };
   if (get("review-source")) get("review-source").onclick = () => openReviewSource(target);
-  get("reveal-answer").onclick = () => { answer=true; renderReview(); get("review-body").querySelector("[data-rating]").focus(); };
+  get("reveal-answer").onclick = () => { answer=!answer; renderReview(); get("reveal-answer").focus(); };
   for (const b of get("review-body").querySelectorAll("[data-rating]")) b.onclick = () => {
     const score = b.dataset.rating;
     if (score === "again" && !previouslyRetried.has(card.key)) {
@@ -1283,6 +1384,14 @@ function renderReview() {
     get("show-hint")?.focus();
   };
 }
+get("review-body").addEventListener("click",(event) => {
+  const filter = event.target.closest("[data-review-filter]");
+  if (!filter || reviewFilter === filter.dataset.reviewFilter) return;
+  reviewFilter = filter.dataset.reviewFilter;
+  changeReviewCard(null);
+  renderReview();
+  get("review-body").querySelector('[data-review-filter="' + reviewFilter + '"]').focus();
+});
 const quizPairs = [
   [["economist","经济学家"],["economics","经济学"]],
   [["pension","养老金"],["passion","热情"]],
