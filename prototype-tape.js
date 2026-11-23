@@ -122,8 +122,16 @@ function tapeLineRects(first,last) {
 }
 
 function tapeSweep(placement,peeling,finish) {
+  const active = placement.effects?.[0];
+  const progress = active?.effect?.getComputedTiming().progress;
+  const previous = active ? {
+    edgeOpacity:getComputedStyle(placement.edge).opacity,
+    edgeTransform:getComputedStyle(placement.edge).transform,
+    clipPath:getComputedStyle(placement.print).clipPath,
+  } : null;
   placement.effects?.forEach((effect) => effect.cancel());
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !placement.print.animate) {
+  if (reduceMotion.matches || !placement.print.animate) {
+    placement.effects = null;
     finish?.();
     return;
   }
@@ -134,17 +142,31 @@ function tapeSweep(placement,peeling,finish) {
       "% 52%," + clamp(x-slant) + "% 115%,0 115%)";
   };
   const end = Math.abs(slant) + 5;
-  const stops = [-end,8,43,80,100+end];
-  if (peeling) stops.reverse();
-  const timing = {duration:peeling ? 245 : 285,delay:placement.line * 34,
-    easing:peeling ? "cubic-bezier(.46,.03,.56,1)" : "cubic-bezier(.22,.72,.27,1)",fill:"backwards"};
-  const print = placement.print.animate(stops.map((x) => ({clipPath:clipAt(x,slant*.18)})),timing);
+  const from = previous ? placement.sweepFrom + (placement.sweepTo-placement.sweepFrom)*(progress ?? 0) :
+    peeling ? 100+end : -end;
+  const to = peeling ? -end : 100+end;
+  const stages = [0,.2,.53,.81,1];
+  const stops = stages.map((t) => from + (to-from)*t);
+  const fraction = Math.abs(to-from)/(100+2*end);
+  const base = peeling ? 245 : 270;
+  const timing = {duration:Math.max(85,base*fraction),delay:previous ? 0 : placement.line * 37,
+    easing:peeling ? "cubic-bezier(.42,.09,.39,1)" : motionEasing,fill:"backwards"};
+  const printing = stops.map((x,i) => ({offset:stages[i],clipPath:clipAt(x,slant*.18)}));
   const skew = Math.atan(2*slant*placement.width/(100*placement.height));
-  const edge = placement.edge.animate(stops.map((x,i) => ({
-    opacity:i === 0 || i === stops.length-1 ? 0 : (peeling ? .84 : .64),
+  const folding = stops.map((x,i) => ({
+    offset:stages[i],
+    opacity:[0,.42,.69,.35,0][i] * (peeling ? 1.15 : 1),
     transform:"translate3d(" + (x*placement.width/100).toFixed(2) + "px,0,0) translateX(-48%) skewX(" +
-      skew + "rad) scaleX(" + (i === 2 && peeling ? 1.18 : .82) + ")",
-  })),timing);
+      skew + "rad) scaleX(" + (i === 2 && peeling ? 1.19 : .82) + ")",
+  }));
+  if (previous) {
+    printing[0].clipPath = previous.clipPath;
+    folding[0] = {offset:0,opacity:previous.edgeOpacity,transform:previous.edgeTransform};
+  }
+  const print = placement.print.animate(printing,timing);
+  const edge = placement.edge.animate(folding,timing);
+  placement.sweepFrom = from;
+  placement.sweepTo = to;
   placement.effects = [print,edge];
   print.onfinish = () => {
     if (placement.effects?.[0] !== print) return;

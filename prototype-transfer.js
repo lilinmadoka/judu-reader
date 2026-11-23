@@ -330,6 +330,7 @@ async function copyImportPrompt() {
   } catch {
     get("prompt-text").value = importPrompt;
     get("prompt-dialog").showModal();
+    smoothIn(get("prompt-dialog"),{distance:7,opacity:.58,duration:185});
     get("prompt-text").focus();
     get("prompt-text").select();
   }

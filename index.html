@@ -55,7 +55,6 @@
 .review{min-height:100dvh;padding:clamp(20px,6vw,64px) 16px 24px}.review-inner{margin:auto;max-width:650px}.review-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px}.review-head h1{font-size:21px;margin:0}.review-card{background:var(--paper);border:1px solid var(--line);padding:clamp(18px,4vw,35px);border-radius:11px;box-shadow:0 1px 2px #2a241a0a,0 12px 32px #2a241a0d}.review-card h2{font:700 clamp(31px,6vw,48px)/1.15 var(--serif);margin:0 0 15px;overflow-wrap:anywhere}.review-card h3{font-size:16px;margin:0 0 5px}.review-tools,.rating{display:flex;gap:7px;flex-wrap:wrap}.review-hint{font:19px/1.6 var(--serif);margin:13px 0;color:var(--ink)}.review-answer{margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}.review-answer p{margin:0 0 8px}.review-results{list-style:none;padding:0}.review-results li{padding:6px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}.review-results b{font-family:var(--serif);font-size:16px}
 @media (max-width:780px){.workspace{grid-template-columns:minmax(0,1fr) 8px minmax(228px,33vw)}.paper{padding-right:50px;padding-left:19px}.paragraph .english{font-size:17px}.divider:after{left:3px}}
 @media (max-width:570px){.workspace{grid-template-columns:1fr;grid-template-rows:minmax(0,68fr) minmax(0,32fr)}.divider{display:none}.inspector{border-top:1px solid var(--line);padding:12px 18px}.paper{padding-top:15px}.paragraph .english{font-size:16px}}
-@media (prefers-reduced-motion:no-preference){button{transition:background-color .12s}}
 
 /* Quiet section colors. Labels carry the meaning even when the colors look alike. */
 .explain {
@@ -84,7 +83,8 @@
 .explain h3,.inspector .explain h3 {color:var(--section-ink);font-size:12px;margin:0 0 4px}
 .explain p:last-child,.inspector .explain p:last-child {margin-bottom:0}
 .inspector .explain .definition {color:var(--section-ink);margin:0;line-height:1.6}
-.word,.picking .sentence {transition:background-color 115ms ease-out}
+.word,.paragraph .sentence {transition:background-color 145ms var(--settle),box-shadow 145ms var(--settle)}
+.motion-clipping {overflow:hidden}
 .tooltip {min-width:0;padding:5px 9px;font-size:12px;line-height:1.5}
 .tooltip b {display:inline;font-size:14px;line-height:inherit;margin:0 7px 0 0}
 .spell-pair {display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 4px;color:var(--amber-ink)}
@@ -108,7 +108,7 @@
 .review-status-text {display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .review-jump {font-size:12px;color:var(--green);min-height:26px}
 @media (prefers-reduced-motion:reduce) {
-  .word,.picking .sentence,.tab,.plain,.primary,.ghost {transition:none}
+  .word,.paragraph .sentence,.tab,.plain,.primary,.ghost {transition:none}
 }
 
 /* Floating controls give the passage the full height of the window. */
@@ -266,10 +266,15 @@
 .match-feedback {margin:12px 0 8px;min-height:24px;color:var(--green);font-size:13px}
 .match-feedback[data-result="retry"] {color:var(--coral-ink)}
 @media (prefers-reduced-motion:no-preference) {
-  .study-float button,.match-option,.para-actions button {
-    transition:background-color 185ms var(--settle),border-color 185ms var(--settle),transform 165ms var(--settle);
+  .idle-dialog[open]::backdrop {animation:veil-in 170ms var(--settle)}
+  @keyframes veil-in {from {opacity:0} to {opacity:1}}
+  .tab,.plain,.primary,.ghost,.match-option,.para-actions button {
+    transition:background-color 145ms var(--settle),border-color 145ms var(--settle),
+      color 145ms var(--settle),transform 175ms var(--settle);
   }
-  .study-float button:active,.match-option:active,.para-actions button:active {transform:scale(.975)}
+  button:is(.tab,.plain,.primary,.ghost,.match-option):active:enabled,.para-actions button:active:enabled {
+    transform:scale(.975);transition-duration:85ms;
+  }
 }
 @media(max-width:570px) {
   :root {--float-inset:8px}
@@ -402,6 +407,7 @@
 <script src="prototype-cet4-data.js"></script>
 <script src="prototype-word-family.js"></script>
 <script src="prototype-dictionary.js"></script>
+<script src="prototype-motion.js"></script>
 <script src="prototype-tape.js"></script>
 <script src="prototype-study-clock.js"></script>
 <script>
@@ -528,9 +534,9 @@ function renderMaterial(id) {
     source.append(details);
   }
   get("inspect-kind").textContent = "";
-  get("inspect-content").innerHTML = '<p class="muted">' + (material.sourceOnly ?
+  updateInspector('<p class="muted">' + (material.sourceOnly ?
     "本篇已收录原题，逐句讲解待补。仍可查词和标记生词。" :
-    "点正文中的单词查看常用义。想拆一句时，点段落右侧的「选句」。") + '</p>';
+    "点正文中的单词查看常用义。想拆一句时，点段落右侧的「选句」。") + '</p>',false);
   get("inspector").scrollTop = 0;
   completed = finished.has(id);
   updateCompleted();
@@ -614,53 +620,38 @@ function questionText(id,text) {
 
 function flash(message) {
   clearTimeout(toastTimer);
-  get("toast").textContent = message;
-  get("toast").hidden = false;
-  toastTimer = setTimeout(() => {get("toast").hidden = true;}, 2200);
+  const toast = get("toast");
+  const opacity = toast.hidden ? 0 : getComputedStyle(toast).opacity;
+  toast.textContent = message;
+  toast.hidden = false;
+  playEffect(toast,[{opacity},{opacity:1}],{duration:125});
+  toastTimer = setTimeout(() => playEffect(toast,[{opacity:1},{opacity:0}],{
+    duration:140,after:() => {toast.hidden = true;},
+  }),2200);
 }
 let peekTimer, peekRevealScroll = null;
-const runningEffects = new WeakMap();
-function stopEffect(element) {
-  runningEffects.get(element)?.cancel();
-  runningEffects.delete(element);
-}
-function playEffect(element, frames, duration, after, easing = "cubic-bezier(.22,1,.36,1)") {
-  stopEffect(element);
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !element.animate) {
-    after?.();
-    return;
-  }
-  const effect = element.animate(frames, { duration, easing });
-  runningEffects.set(element,effect);
-  effect.onfinish = () => {
-    if (runningEffects.get(element) !== effect) return;
-    runningEffects.delete(element);
-    after?.();
-  };
-}
-function smoothIn(element, {distance = 4, scale = 1, duration = 210} = {}) {
-  // Sample a critically damped response. Normalize its tail so it settles at the final position.
-  const settle = (t) => 1 - (1 + 7*t)*Math.exp(-7*t);
-  const steps = Array.from({length:13}, (_,i) => {
-    const t = i/12, rest = 1 - settle(t)/settle(1);
-    return {offset:t,opacity:1-.30*rest,
-      transform:"translateY("+(distance*rest)+"px) scale("+(1-(1-scale)*rest)+")"};
-  });
-  playEffect(element,steps,duration,undefined,"linear");
-}
-function closePeek(soft = false) {
+function closePeek(immediate = false) {
   clearTimeout(peekTimer);
   peekRevealScroll = null;
   const peek = get("peek");
-  if (soft === true && !peek.hidden) {
-    playEffect(peek, [{opacity:1},{opacity:0}], 105, () => {peek.hidden = true;});
-  } else {
+  if (immediate || reduceMotion.matches) {
     stopEffect(peek);
     peek.hidden = true;
+    delete peek.dataset.hiding;
+  } else if (!peek.hidden && !peek.dataset.hiding) {
+    const {opacity,transform} = getComputedStyle(peek);
+    peek.dataset.hiding = "true";
+    playEffect(peek,[{opacity,transform},{opacity:0,transform:"translateY(-2px) scale(.99)"}],{
+      duration:110,after:() => {peek.hidden = true; delete peek.dataset.hiding;},
+    });
   }
 }
 function showPeek(target, anchor) {
   const peek = get("peek");
+  const previous = peek.hidden || reduceMotion.matches ? null : peek.getBoundingClientRect();
+  const previousOpacity = previous ? Number(getComputedStyle(peek).opacity) : 0;
+  delete peek.dataset.hiding;
+  stopEffect(peek);
   const item = dictionaryEntry(target);
   const senses = peekDefinitions(item).map(([pos,zh]) =>
     '<span class="peek-sense">' + (pos ? '<span class="peek-pos">' + esc(pos) + '</span> ' : '') +
@@ -669,11 +660,12 @@ function showPeek(target, anchor) {
     '<span class="peek-senses">' + (senses || "本地词表暂无收录") + '</span>';
   peek.hidden = false;
   clearTimeout(peekTimer);
-  peekTimer = setTimeout(() => closePeek(true),item?.senses.length > 2 ? 4400 : 3100);
+  peekTimer = setTimeout(closePeek,item?.senses.length > 2 ? 4400 : 3100);
   const lastLine = () => [...anchor.getClientRects()].filter((box) => box.width > 0).at(-1) || anchor.getBoundingClientRect();
   let rect = lastLine();
   const reader = get("reader");
   const pane = reader.getBoundingClientRect();
+  peek.style.maxWidth = Math.min(340,Math.max(1,pane.width - 16))+"px";
   const width = peek.offsetWidth, height = peek.offsetHeight;
   const bottom = Math.min(window.innerHeight,pane.bottom) - 8;
   const belowGap = 8;
@@ -687,10 +679,20 @@ function showPeek(target, anchor) {
     }
   }
   const left = Math.max(pane.left + 8, Math.min(rect.left, pane.right - width - 8));
+  const top = rect.bottom+belowGap;
+  if (top + height > Math.min(window.innerHeight,pane.bottom)) {
+    closePeek(true);
+    return;
+  }
   const nub = Math.max(8,Math.min(width-8,rect.left+rect.width/2-left));
   peek.style.setProperty("--peek-nub",nub+"px");
-  Object.assign(peek.style,{left:left+"px",top:(rect.bottom+belowGap)+"px"});
-  smoothIn(peek,{distance:-4,scale:.98,duration:205});
+  Object.assign(peek.style,{left:left+"px",top:top+"px"});
+  const dx = previous ? previous.left-left : 0;
+  const dy = previous ? previous.top-top : 0;
+  const nearby = previous && Math.abs(dx) < 145 && Math.abs(dy) < 24;
+  const from = nearby ? {opacity:Math.max(.56,previousOpacity),transform:"translate("+dx+"px,"+dy+"px)"} :
+    {opacity:.34,transform:"translateY(-4px) scale(.985)"};
+  playEffect(peek,[from,{opacity:1,transform:"none"}],{duration:nearby ? 135 : 170});
 }
 function makeTarget(sentence, start, end, entry) {
   const first = sentence.words[start], last = sentence.words[end];
@@ -943,8 +945,9 @@ function englishDetails(item) {
 }
 function updateInspector(html, animate) {
   const content = get("inspect-content");
+  if (!animate) stopEffect(content);
   content.innerHTML = html;
-  if (animate) smoothIn(content,{distance:4,duration:230});
+  if (animate) smoothIn(content,{distance:2,opacity:.68,duration:155});
 }
 function renderLookup(animate = false) {
   const target = activeLookup;
@@ -999,6 +1002,7 @@ function selectParagraph(number) {
   closePeek();
   for (const section of get("passage").querySelectorAll(".paragraph")) {
     const on = Number(section.dataset.paragraph) === picking;
+    if (section.classList.contains("picking") === on) continue;
     section.classList.toggle("picking",on);
     const button = section.querySelector("[data-pick]");
     if (button) {
@@ -1023,6 +1027,7 @@ function inspectSentence(sentence) {
   startCurrentPassage();
   selectParagraph(null); closePeek(); activeLookup = null;
   markState();
+  get("inspector").scrollTop = 0;
   get("inspect-kind").textContent = "句子解析";
   const title = '<div class="analysis-block"><h2 class="sentence-title" lang="en">' + renderText(sentence.display) + '</h2>';
   if (material.key === "a" && !completed && sentence.display !== sentence.display.replace(blankPattern,"")) {
@@ -1058,7 +1063,6 @@ function inspectSentence(sentence) {
     updateLabel();
     button.onclick = () => { toggleMark(target); updateLabel(); };
   }
-  get("inspector").scrollTop = 0;
   if (focusWasInside) focusButton?.focus({preventScroll:true});
 }
 
@@ -1144,7 +1148,7 @@ get("reader").addEventListener("click",(event) => {
     translation.setAttribute("aria-expanded",String(passages.has(id)));
     const paragraph = translation.closest(".paragraph").getAttribute("aria-label");
     translation.setAttribute("aria-label",(passages.has(id) ? "收起" : "展开")+paragraph+translation.textContent);
-    get("passage").querySelector('[data-translated="'+id+'"]').hidden = !passages.has(id);
+    revealBlock(get("passage").querySelector('[data-translated="'+id+'"]'),passages.has(id));
     closePeek(); return;
   }
   const sentenceEl = event.target.closest(".sentence");
@@ -1191,6 +1195,7 @@ document.addEventListener("pointerdown",(event) => {
   if (!event.target.closest("[data-token]")) closePeek();
   if (picking !== null && !event.target.closest(".paragraph.picking, [data-pick]")) selectParagraph(null);
 });
+document.addEventListener("click",animateDetails);
 get("reader").addEventListener("scroll",() => {
   if (peekRevealScroll !== null && Math.abs(get("reader").scrollTop-peekRevealScroll) < 1) {
     peekRevealScroll = null;
@@ -1198,7 +1203,7 @@ get("reader").addEventListener("scroll",() => {
   }
   closePeek();
 },{passive:true});
-window.addEventListener("resize",closePeek,{passive:true});
+window.addEventListener("resize",() => closePeek(true),{passive:true});
 
 function finishPassage() {
   if (completed) {
@@ -1339,7 +1344,7 @@ function renderReview() {
       reviewedThisRound.clear();
       postponed.clear();
       previouslyRetried.clear();
-      renderReview();
+      transitionReview();
     };
     for (const button of get("review-body").querySelectorAll("[data-review-jump]")) {
       button.onclick = () => openReviewSource(cards[Number(button.dataset.reviewJump)].target);
@@ -1351,20 +1356,24 @@ function renderReview() {
   const heading = '<h2 lang="en">'+esc(target.text)+'</h2>' +
     (source ? '<p class="muted">' + esc(source.exam + " · " + source.info.label) + '</p>' : '');
   const tools = '<div class="review-tools"><button class="ghost" id="show-hint" aria-expanded="'+hint+'">'+(hint?'收起原句':'看原句')+'</button>' +
-    (answer ? '<button class="ghost" id="reveal-answer" aria-expanded="true">遮住中文</button>' : '') +
     (source ? '<button class="plain" id="review-source">回原文 ↗</button>' : '') + '</div>';
   const original = hint ? '<p class="review-hint" lang="en">' + reviewSentence(target) + '</p>' : '';
   const item = answer && !entry?.meaning ? dictionaryEntry(target) : null;
-  const response = answer ? '<div class="review-answer">' +
+  const curtain = '<button type="button" class="ghost review-mask" id="reveal-answer" aria-controls="review-answer-content" aria-expanded="' +
+    answer + '">' + (answer ? "遮住中文" : "想一想，再揭开中文") + '</button>';
+  const response = answer ? '<div class="review-answer" id="review-answer-content">' +
     (entry?.meaning ? explanation("meaning","语境释义",'<p><b>' + esc(entry.meaning) + '</b></p>') :
       explanation("meaning","常用义项",dictionarySenses(item)) + wordFormsPanel(item)) +
     entryExtras(entry) +
     '<div class="rating">'+Object.entries(schedule).map(([key,value])=>'<button class="ghost" data-rating="'+key+'" data-memory="'+key+'">'+value.label+'</button>').join("")+'</div></div>' :
-    '<button type="button" class="ghost review-mask" id="reveal-answer" aria-expanded="false">想一想，再揭开中文</button>';
-  get("review-body").innerHTML = header+'<div class="review-card">'+heading+tools+original+response+'</div>';
-  get("show-hint").onclick = () => { hint=!hint; renderReview(); get("show-hint").focus(); };
+    '<div id="review-answer-content" hidden></div>';
+  get("review-body").innerHTML = header+'<div class="review-card">'+heading+tools+original+curtain+response+'</div>';
+  get("show-hint").onclick = () => { hint=!hint; transitionReview(".review-hint"); get("show-hint").focus({preventScroll:true}); };
   if (get("review-source")) get("review-source").onclick = () => openReviewSource(target);
-  get("reveal-answer").onclick = () => { answer=!answer; renderReview(); get("reveal-answer").focus(); };
+  get("reveal-answer").onclick = () => {
+    answer=!answer; transitionReview(".review-answer");
+    get("reveal-answer").focus({preventScroll:true});
+  };
   for (const b of get("review-body").querySelectorAll("[data-rating]")) b.onclick = () => {
     const score = b.dataset.rating;
     if (score === "again" && !previouslyRetried.has(card.key)) {
@@ -1380,16 +1389,29 @@ function renderReview() {
     markState();
     saveReading();
     if (activeLookup) renderLookup();
-    changeReviewCard(null); renderReview();
-    get("show-hint")?.focus();
+    changeReviewCard(null); transitionReview();
+    get("show-hint")?.focus({preventScroll:true});
   };
+}
+function transitionReview(section) {
+  const body = get("review-body");
+  const from = body.querySelector(".review-card")?.getBoundingClientRect().height;
+  renderReview();
+  const card = body.querySelector(".review-card");
+  if (!card || !from) return;
+  const to = card.getBoundingClientRect().height;
+  if (section && Math.abs(to-from) <= 360) {
+    resizeContent(card,from,to,undefined,{duration:to > from ? 175 : 145});
+  }
+  const entering = section ? card.querySelector(section) : card;
+  if (entering) smoothIn(entering,{distance:section ? 3 : 5,opacity:.58,duration:175});
 }
 get("review-body").addEventListener("click",(event) => {
   const filter = event.target.closest("[data-review-filter]");
   if (!filter || reviewFilter === filter.dataset.reviewFilter) return;
   reviewFilter = filter.dataset.reviewFilter;
   changeReviewCard(null);
-  renderReview();
+  transitionReview();
   get("review-body").querySelector('[data-review-filter="' + reviewFilter + '"]').focus();
 });
 const quizPairs = [
@@ -1429,7 +1451,7 @@ function drawMatchLines(animateWord) {
     output.append(line);
     if (word === animateWord) playEffect(line,[
       {opacity:.5,transform:rotation+" scaleX(.10)"},{opacity:1,transform:rotation+" scaleX(1)"}
-    ],230);
+    ],{duration:210});
   }
 }
 function setMatchFeedback(text, retry = false) {
@@ -1522,18 +1544,19 @@ function showPage(page) {
     if (kind === page) get(kind+"-tab").setAttribute("aria-current","page");
     else get(kind+"-tab").removeAttribute("aria-current");
   }
-  closePeek(); selectParagraph(null);
+  closePeek(true); selectParagraph(null);
   window.scrollTo(0,0);
   if (page === "review") {
     markState();
     renderReview();
-    smoothIn(get("review-body"),{distance:4,duration:220});
+    smoothIn(get("review-body"),{distance:5,duration:175});
   } else if (page === "match") {
     if (!matchRound.length) startMatchRound();
     else drawMatchLines();
-    smoothIn(get("matching").querySelector(".match-inner"),{distance:4,duration:220});
+    smoothIn(get("matching").querySelector(".match-inner"),{distance:5,duration:175});
   } else if (page === "library") {
     renderLibrary();
+    smoothIn(get("library").querySelector(".library-inner"),{distance:5,duration:175});
   } else {
     get("reader").scrollTop = savedReadingScroll;
     refreshTapes();
@@ -1563,6 +1586,7 @@ function renderClock({phase,visible,elapsed}) {
   if (phase === "confirm" && visible && !idleDialog.open) {
     closePeek();
     idleDialog.showModal();
+    smoothIn(idleDialog,{distance:7,opacity:.55,duration:185});
   } else if (phase !== "confirm" && idleDialog.open) {
     idleDialog.close();
   }
@@ -1666,7 +1690,11 @@ library.addEventListener("drop",(event) => {
 });
 
 const divider = get("divider");
-if (typeof ResizeObserver === "function") new ResizeObserver(() => refreshTapes()).observe(get("passage"));
+if (typeof ResizeObserver === "function") {
+  const observer = new ResizeObserver(() => refreshTapes());
+  observer.observe(get("passage"));
+  observer.observe(get("questions"));
+}
 function setAside(width) {
   const w = get("workspace").clientWidth;
   const px = Math.max(240,Math.min(Math.min(520,Math.round(w*.54)),width));
@@ -1675,8 +1703,15 @@ function setAside(width) {
   divider.setAttribute("aria-valuetext","详解栏宽 "+px+" 像素");
 }
 divider.onpointerdown = (e) => { if(e.button===0) divider.setPointerCapture(e.pointerId); };
+let asideFrame = 0, asidePointerX;
 divider.onpointermove = (e) => {
-  if (divider.hasPointerCapture(e.pointerId)) setAside(get("workspace").getBoundingClientRect().right-e.clientX-6);
+  if (!divider.hasPointerCapture(e.pointerId)) return;
+  asidePointerX = e.clientX;
+  if (asideFrame) return;
+  asideFrame = requestAnimationFrame(() => {
+    asideFrame = 0;
+    setAside(get("workspace").getBoundingClientRect().right-asidePointerX-6);
+  });
 };
 divider.onkeydown = (e) => {
   if (!["ArrowLeft","ArrowRight"].includes(e.key)) return;
