@@ -1,0 +1,8 @@
+.DS_Store
+.env*
+*.zip
+archive/
+backups/
+data/
+*.pdf
+__pycache__/
