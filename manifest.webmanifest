@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "句读 · 英语精读",
+  "short_name": "句读",
+  "description": "阅读、查词、拆句和复习",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#fefdfa",
+  "background_color": "#fefdfa",
+  "icons": [
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}

@@ -1,0 +1,1526 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>句读 · 英语精读</title>
+<meta name="theme-color" content="#fefdfa">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<style>
+:root{color-scheme:light;--paper:#fefdfa;--outer:#f3f0ea;--side:#f6f3ef;--ink:#22262b;--ink-soft:#4b5056;--muted:#6b655e;--line:#e2ded7;--line-strong:#ccc6bd;--green:#207463;--green-deep:#0a5c4e;--pale:#dff2eb;--wash:#f3fbf8;--accent-line:#9acaba;--focus:#328c78;--tip:#183e38;--mark:#a46b32;--serif:Georgia,"Times New Roman",serif;
+  --leaf-ink:#28633c;--leaf-line:#459b61;--leaf-edge:#9cc7a6;--leaf-wash:#f4fbf5;--leaf-tint:#ddf1e1;
+  --blue-ink:#2d5883;--blue-edge:#9bbee3;--blue-wash:#f6fafe;--blue-tint:#deedfe;
+  --amber-ink:#744c0e;--amber-line:#b27923;--amber-edge:#d5b48d;--amber-wash:#fef8f1;--amber-tint:#f8e8d6;
+  --violet-ink:#61477d;--violet-edge:#c4b1dd;--violet-wash:#faf8fe;
+  --coral-ink:#804036;--coral-line:#c4685a;--coral-edge:#e1aca2;--coral-tint:#ffe4df}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--outer);font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}button,input{font:inherit}a{color:var(--green)}button{cursor:pointer;color:inherit}button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:3px}button:disabled{cursor:default}button[hidden],[hidden]{display:none!important}button{min-height:30px}h1,h2,h3,p{margin-top:0}h2{line-height:1.35}em{font-style:normal}::selection{background:#c1e8db}
+.muted{color:var(--muted);font-size:12px}
+.tab,.plain,.primary,.ghost{border:1px solid transparent;border-radius:6px;background:transparent;padding:5px 10px}.tab{color:var(--muted)}.tab[aria-current="page"]{background:var(--pale);color:var(--green);font-weight:600}.plain:hover,.ghost:hover{background:var(--pale)}.primary{background:var(--green);color:#fff;border-color:var(--green)}.primary:hover{background:var(--green-deep);border-color:var(--green-deep)}.ghost{border-color:var(--line);color:var(--green);background:var(--paper)}.count{margin-left:3px}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 12px var(--aside,340px);height:100dvh;overflow:hidden}
+.reader,.inspector{overflow:auto;min-width:0;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}.reader{background:var(--paper);scroll-padding-top:18px}
+.paper{max-width:790px;margin:auto;padding:26px clamp(34px,6vw,84px) 36px clamp(23px,4vw,54px)}.paper-head{border-bottom:1px solid var(--line);margin-bottom:20px;padding-bottom:14px}.meta{color:var(--muted);font-size:12px;margin:0 0 7px}.paper-title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}.paper-title-row button{font-size:12px;color:var(--green);flex:none}.paper h1{font:700 clamp(25px,3vw,37px)/1.05 var(--serif);letter-spacing:-.015em;margin:0 0 8px}.help{color:var(--muted);font-size:12px;margin:0}.help summary{cursor:pointer;width:fit-content}.help p{margin:7px 0 0}
+.paragraph{position:relative;margin:0 0 21px}.paragraph .english{font:18px/1.87 var(--serif);overflow-wrap:break-word;margin:0}.para-actions{position:absolute;left:calc(100% + 9px);top:2px;display:flex;flex-direction:column;gap:2px;align-items:flex-start}.para-actions button{min-height:24px;border:1px solid transparent;background:transparent;color:var(--green);white-space:nowrap;font-size:11px;border-radius:5px;padding:2px 5px}.para-actions button:hover,.para-actions button[aria-pressed="true"],.para-actions button[aria-expanded="true"]{background:var(--pale);border-color:var(--line)}
+.word{cursor:help;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}.word:hover,.word.current{background:var(--pale)}.word.marked{background:transparent}
+#passage{position:relative;isolation:isolate}
+#passage .paragraph{z-index:1}
+.tape-layer,.tape-print,.tape-shadow,.tape-cut,.tape-face,.tape-fold{position:absolute;pointer-events:none}
+.tape-layer{inset:0}
+.tape-placement{position:absolute}
+.tape-print,.tape-shadow,.tape-cut{inset:0}
+.tape-cut,.tape-face,.tape-shadow::before{clip-path:var(--tape-outline)}
+.tape-shadow{transform:translateY(1.30px);filter:blur(.70px);
+  mask-image:linear-gradient(to bottom,transparent 72%,#000 99%);opacity:.43}
+.tape-shadow::before{content:"";position:absolute;inset:0;background:#745338}
+.tape-face{inset:0;background-color:var(--tape-tint);opacity:var(--tape-opacity,.84);
+  background-image:var(--tape-grain,none),radial-gradient(ellipse at var(--tape-bloom),#fff0d58a,transparent 73%),
+    linear-gradient(174deg,#fff5e164,transparent 42%,transparent 72%,#9257373b);
+  background-position:var(--tape-grain-position,0 0),center,center;
+  background-size:80px 24px,100% 100%,100% 100%;background-repeat:repeat,no-repeat,no-repeat}
+.tape-fold{left:-14%;top:-1px;bottom:-1px;width:clamp(4px,14%,10px);opacity:0;
+  background:linear-gradient(90deg,transparent,#6d543c45 24%,#d3be9ba9 46%,#fffaf1ed 64%,#fffdf5ae 81%,transparent)}
+.hint-mark{color:inherit;background:var(--tape-color,#e8dec7);background:color-mix(in srgb,var(--tape-color,#e8dec7) 72%,var(--paper));padding-inline:.12em;
+  box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.picking .sentence{background:#d4efe5a6;border-radius:2px;cursor:pointer;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.picking .sentence:hover,.picking .sentence:focus-visible{background:#b2e2d2c9;box-shadow:0 0 0 1px var(--green),inset 0 -2px 0 var(--green)}
+.picking .sentence:focus-visible{outline:2px solid var(--green-deep);outline-offset:3px}
+.picking .sentence .word{cursor:inherit;background:transparent}
+.para-actions [data-pick][aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.paragraph-translation{margin:9px 0 0;padding:9px 0 8px 13px;border-left:2px solid var(--accent-line);color:var(--ink-soft);font-size:14px;line-height:1.75}.paragraph-translation p{margin:5px 0 0}.caption{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.finish{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0 8px;border-top:1px solid var(--line)}.finish .muted{margin:0}.questions{scroll-margin-top:14px;padding-top:14px;margin-top:13px;border-top:1px solid var(--line)}.questions h2{font:700 23px var(--serif);margin:0 0 10px}.question{border:0;padding:0;margin:0 0 17px;min-width:0}.question legend{font:700 16px/1.5 var(--serif);margin:0 0 4px}.question label{display:flex;align-items:baseline;gap:7px;padding:4px 0;cursor:pointer;font:16px/1.45 var(--serif)}.question input{accent-color:var(--green);margin:0;flex:none}.reference{color:var(--green);font-size:12px}.source{padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.divider{cursor:col-resize;touch-action:none;background:linear-gradient(to right,var(--paper) 5px,var(--line) 5px,var(--line) 6px,var(--side) 6px);position:relative}.divider:after{content:"";position:absolute;left:4px;top:47%;width:4px;height:34px;background:var(--line-strong);border-radius:3px}.divider:hover:after,.divider:focus-visible:after{background:var(--green)}
+.inspector{background:var(--side);padding:18px clamp(14px,2.4vw,24px) 28px}.inspect-title{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:9px;border-bottom:1px solid var(--line);margin-bottom:15px;color:var(--green);font-weight:650;font-size:13px}.inspect-title small{font-size:11px;color:var(--muted);font-weight:400}.inspector h2{font:700 25px/1.22 var(--serif);overflow-wrap:anywhere;margin:0 0 5px}.inspector .sentence-title{font-size:19px;line-height:1.55}.inspector .definition{font-weight:600;color:var(--green);font-size:15px;margin:3px 0 9px}.inspector .muted{margin:0 0 10px}.inspector h3{margin:0 0 4px;font-size:12px;color:var(--green)}.inspector section{margin:13px 0 0;padding-top:10px;border-top:1px solid var(--line)}.inspector section p{font-size:13px;margin:0 0 5px}.inspect-actions{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0;font-size:12px}.inspector .compare{font-size:13px;padding-left:9px;border-left:2px solid var(--line-strong)}.compare b{font-family:var(--serif);letter-spacing:.015em}.analysis-block ol,.analysis-block ul{margin:0;padding-left:20px;font-size:12px}.analysis-block li{margin:3px 0}.analysis-block dt{font:14px/1.4 var(--serif);margin-top:6px}.analysis-block dd{margin:0 0 4px;color:var(--muted);font-size:12px}.analysis-block dl{margin:0}
+.tooltip{position:fixed;z-index:8;background:var(--tip);color:#f3f8f6;pointer-events:none;padding:7px 11px;max-width:min(340px,calc(100vw - 16px));min-width:120px;border-radius:7px;box-shadow:0 6px 18px #0f1f1d33;font-size:13px}.tooltip b{display:block;font:700 15px/1.3 var(--serif);margin-bottom:2px}
+.toast{position:fixed;z-index:9;bottom:16px;left:50%;transform:translateX(-50%);background:var(--tip);color:#f3f8f6;padding:7px 13px;border-radius:6px;font-size:12px;pointer-events:none;max-width:calc(100vw - 25px)}
+.review{min-height:100dvh;padding:clamp(20px,6vw,64px) 16px 24px}.review-inner{margin:auto;max-width:650px}.review-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px}.review-head h1{font-size:21px;margin:0}.review-card{background:var(--paper);border:1px solid var(--line);padding:clamp(18px,4vw,35px);border-radius:11px;box-shadow:0 1px 2px #2a241a0a,0 12px 32px #2a241a0d}.review-card h2{font:700 clamp(31px,6vw,48px)/1.15 var(--serif);margin:0 0 15px;overflow-wrap:anywhere}.review-card h3{font-size:16px;margin:0 0 5px}.review-tools,.rating{display:flex;gap:7px;flex-wrap:wrap}.review-hint{font:19px/1.6 var(--serif);margin:13px 0;color:var(--ink)}.review-answer{margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}.review-answer p{margin:0 0 8px}.review-results{list-style:none;padding:0}.review-results li{padding:6px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}.review-results b{font-family:var(--serif);font-size:16px}
+@media (max-width:780px){.workspace{grid-template-columns:minmax(0,1fr) 8px minmax(228px,33vw)}.paper{padding-right:50px;padding-left:19px}.paragraph .english{font-size:17px}.divider:after{left:3px}}
+@media (max-width:570px){.workspace{grid-template-columns:1fr;grid-template-rows:minmax(0,68fr) minmax(0,32fr)}.divider{display:none}.inspector{border-top:1px solid var(--line);padding:12px 18px}.paper{padding-top:15px}.paragraph .english{font-size:16px}}
+@media (prefers-reduced-motion:no-preference){button{transition:background-color .12s}}
+
+/* Quiet section colors. Labels carry the meaning even when the colors look alike. */
+.explain {
+  --section-bg:var(--wash);
+  --section-edge:var(--accent-line);
+  --section-ink:#174941;
+  background:var(--section-bg);
+  border-inline-start:2px solid var(--section-edge);
+  border-radius:0 7px 7px 0;
+  box-shadow:0 1px 2px #3a32240d;
+}
+.explain[data-topic="usage"],.explain[data-topic="structure"] {
+  --section-bg:var(--blue-wash);--section-edge:var(--blue-edge);--section-ink:var(--blue-ink);
+}
+.explain[data-topic="confusion"] {
+  --section-bg:var(--amber-wash);--section-edge:var(--amber-edge);--section-ink:var(--amber-ink);
+}
+.explain[data-topic="morph"],.explain[data-topic="chunks"] {
+  --section-bg:var(--violet-wash);--section-edge:var(--violet-edge);--section-ink:var(--violet-ink);
+}
+.inspector section.explain,.review-answer section.explain {
+  margin:8px 0 0;
+  padding:8px 10px;
+  border-top:0;
+}
+.explain h3,.inspector .explain h3 {color:var(--section-ink);font-size:12px;margin:0 0 4px}
+.explain p:last-child,.inspector .explain p:last-child {margin-bottom:0}
+.inspector .explain .definition {color:var(--section-ink);margin:0;line-height:1.6}
+.word,.picking .sentence {transition:background-color 115ms ease-out}
+.tooltip {min-width:0;padding:5px 9px;font-size:12px;line-height:1.5}
+.tooltip b {display:inline;font-size:14px;line-height:inherit;margin:0 7px 0 0}
+.spell-pair {display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 4px;color:var(--amber-ink)}
+.spell-pair b {font:700 15px/1.4 var(--serif);letter-spacing:.02em}
+.spell-difference {background:#eed3ac;border-radius:2px;padding:0 1px}
+
+[data-memory] {--memory-ink:var(--muted);--memory-wash:#eeebe5}
+[data-memory="again"] {--memory-ink:var(--coral-ink);--memory-wash:var(--coral-tint)}
+[data-memory="hinted"] {--memory-ink:var(--amber-ink);--memory-wash:var(--amber-tint)}
+[data-memory="remembered"] {--memory-ink:var(--leaf-ink);--memory-wash:var(--leaf-tint)}
+.memory-tag {
+  display:inline-flex;align-items:center;gap:5px;
+  color:var(--memory-ink);background:var(--memory-wash);
+  padding:1px 7px;border-radius:5px;font:600 11px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+}
+.memory-tag::before {content:"";width:11px;height:5px;border-bottom:1px dotted currentColor;flex:none}
+.rating button[data-memory] {color:var(--memory-ink);background:var(--memory-wash)}
+.rating button[data-memory]:hover {border-color:var(--memory-ink)}
+.review-answer .rating {margin-top:12px}
+.review-results li {align-items:center;flex-wrap:wrap}
+.review-status-text {display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.review-jump {font-size:12px;color:var(--green);min-height:26px}
+@media (prefers-reduced-motion:reduce) {
+  .word,.picking .sentence,.tab,.plain,.primary,.ghost {transition:none}
+}
+
+/* Floating controls give the passage the full height of the window. */
+:root {--settle:cubic-bezier(.22,1,.36,1);--float-inset:15px}
+.workspace {height:100dvh}
+.reader,.inspector {scroll-padding-bottom:74px}
+.inspector {padding-bottom:74px}
+.review {height:auto;min-height:100dvh;padding-bottom:90px}
+.study-float {
+  position:fixed;right:max(var(--float-inset),env(safe-area-inset-right));
+  bottom:max(var(--float-inset),env(safe-area-inset-bottom));
+  z-index:7;display:flex;gap:7px;align-items:center;max-width:calc(100vw - 20px);
+}
+.study-float nav,.study-clock {
+  display:flex;gap:2px;align-items:center;padding:3px;
+  background:#fefdfae8;border:1px solid var(--line);border-radius:12px;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 1px 2px #2a241a0f,0 6px 20px #2a241a14;
+}
+.study-float .tab {white-space:nowrap;border-radius:8px}
+.review-float {
+  position:fixed;right:var(--float-inset);bottom:calc(var(--float-inset) + 51px);z-index:7;
+  border:1px solid var(--line);border-radius:11px;background:#fefdfae8;color:var(--green);
+  padding:5px 10px;min-height:34px;backdrop-filter:blur(12px);box-shadow:0 1px 2px #2a241a0f,0 6px 20px #2a241a14;
+}
+.review-float:hover {background:var(--pale)}
+.review-float .count {display:inline-block;min-width:1.25em;font-size:11px}
+.anchor-float {bottom:calc(var(--float-inset) + 92px);display:flex;align-items:center;gap:4px;
+  min-height:34px;padding-inline:8px;font-size:12px}
+.anchor-float:disabled {opacity:.55}
+.paper-meta-row {display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.progress-tag {color:var(--muted);font-size:11px;white-space:nowrap}
+.progress-tag[data-progress="reading"] {color:var(--blue-ink)}
+.progress-tag[data-progress="complete"],.progress-count {color:var(--green-deep);font-weight:700}
+.paper-meta-row .progress-tag {padding:0 7px;border-radius:999px;background:#eeebe5;line-height:18px}
+.paper-meta-row .progress-tag[data-progress="reading"] {background:var(--blue-tint)}
+.paper-meta-row .progress-tag[data-progress="complete"] {background:var(--pale)}
+.paper-sections .progress-tag {display:block;margin:0}
+.paper-sections [data-open] {text-align:left}
+.library-progress {font-size:13px;margin:5px 0 0}
+.anchor-target {outline:2px solid var(--focus);outline-offset:3px}
+.idle-dialog {width:min(360px,calc(100vw - 34px));border:1px solid var(--line);border-radius:15px;
+  background:var(--paper);color:var(--ink);padding:21px 22px;box-shadow:0 18px 60px #1f1a1233}
+.idle-dialog::backdrop {background:#1e1c19a8;backdrop-filter:blur(2px)}
+.idle-dialog h2 {font-size:20px;margin:0 0 7px}
+.idle-dialog p {margin-bottom:16px;color:var(--muted)}
+.idle-dialog .dialog-actions {display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.library {min-height:100dvh;padding:clamp(22px,5vw,54px) 18px 100px}
+.library-inner {width:min(760px,100%);margin:auto}
+.library h1 {margin:0 0 3px;font-size:27px}
+.library-head,.paper-item header {display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.library-actions {display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.paper-filter {width:100%;border:1px solid var(--line);border-radius:7px;background:var(--paper);padding:8px 11px;margin:12px 0 7px;color:var(--ink)}
+.paper-filter:focus-visible {outline:2px solid var(--focus);outline-offset:2px}
+.import-status {margin:0 0 10px;color:var(--green);font-size:13px;overflow-wrap:anywhere}
+.import-status:empty {display:none}
+.import-status[data-outcome="error"] {color:var(--coral-ink)}
+.library.drop-ready .paper-filter {outline:2px dashed var(--green);outline-offset:3px}
+.paper-item {padding:14px 0;border-bottom:1px solid var(--line)}
+.paper-item h2 {font-size:16px;margin:0}
+.paper-item p {margin:6px 0 0}
+.paper-sections {display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.paper-sections small {font-size:10px;margin-left:5px;color:var(--muted)}
+.pdf-link {white-space:nowrap;font-size:12px}
+.word-bank {display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:2px 14px;margin:9px 0 12px;font:16px/1.42 var(--serif)}
+.choice-select {color:var(--ink);font:inherit;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:4px 7px}
+.blank {display:inline-block;white-space:nowrap;padding:0 3px;border-bottom:1px solid #97918a;color:var(--green);font:600 12px system-ui;vertical-align:baseline}
+.question-note {font-size:12px;margin:0 0 4px}
+.toast {bottom:62px}
+.study-clock {gap:6px;color:var(--ink-soft);padding:3px 5px 3px 9px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.clock-dot {width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--line-strong)}
+.study-clock[data-clock="running"] .clock-dot {background:var(--leaf-line)}
+.study-clock[data-clock="paused"] .clock-dot {background:var(--amber-line)}
+.clock-time {min-width:36px;text-align:center}
+.clock-toggle {padding:3px 7px;white-space:nowrap;font-size:11px}
+.tooltip {
+  --peek-nub:15px;z-index:10;transform-origin:var(--peek-nub) 0;
+  max-width:min(330px,calc(100vw - 20px));
+}
+.tooltip::before {
+  content:"";position:absolute;left:var(--peek-nub);top:-3px;
+  width:7px;height:7px;background:inherit;transform:translateX(-50%) rotate(45deg);
+}
+.tooltip .peek-senses {display:inline;overflow-wrap:anywhere}
+.tooltip .peek-sense {display:inline-block;max-width:100%;vertical-align:top}
+.tooltip .peek-pos {font-size:10px;color:#b8dace;margin-right:3px}
+.lex-senses {margin:0;padding:0 0 0 20px;font-size:13px;line-height:1.5}
+.lex-senses li+li {margin-top:7px;padding-top:7px;border-top:1px solid var(--line)}
+.lex-senses .lex-pos {color:var(--green);font-size:11px;margin-right:5px}
+.lex-senses p {margin:3px 0 0;font-size:12px}
+.lex-senses .lex-example {color:var(--ink-soft);font-style:italic}
+.lex-english {margin-top:8px;font-size:12px}
+.lex-english summary {cursor:pointer;color:var(--green)}
+.lex-english ul {padding-inline-start:18px;margin:5px 0 0}
+.lex-source {display:block;margin:7px 0 0;color:var(--muted);font-size:11px}
+.formation-step+.formation-step {margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+.formation-formula {display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
+.formation-formula b {font:700 15px/1.3 var(--serif)}
+.formation-formula .affix {color:var(--violet-ink)}
+.formation-family {margin-top:7px}
+.explain .sentence-words {margin:0;padding-left:0;list-style:none}
+.sentence-words li {margin:0 0 6px}
+.sentence-words li:last-child {margin-bottom:0}
+.sentence-words .sentence-word-head {font-weight:650;color:var(--blue-ink)}
+.sentence-words p {margin:2px 0 0}
+.sentence-more {margin-top:8px}
+.sentence-more summary {cursor:pointer;font-size:12px;color:var(--blue-ink)}
+.sentence-more[open] summary {margin-bottom:6px}
+[data-memory] {--memory-line:var(--muted)}
+[data-memory="again"] {--memory-line:var(--coral-line)}
+[data-memory="hinted"] {--memory-line:var(--amber-line)}
+[data-memory="remembered"] {--memory-line:var(--leaf-line)}
+.memory-tag::before {border-color:var(--memory-line)}
+
+.match-page {min-height:100dvh;padding:clamp(20px,5vw,58px) 13px 92px}
+.match-inner {width:min(680px,100%);margin:auto}
+.match-head {display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin:0 0 10px}
+.match-head h1 {font-size:22px;margin:0}
+.match-card {background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px #2a241a0a,0 12px 32px #2a241a0d;padding:clamp(12px,3vw,22px)}
+.match-columns {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(30px,10vw,100px)}
+.match-board {position:relative}
+.match-lines {pointer-events:none;position:absolute;inset:0}
+.match-line {position:absolute;height:2px;background:var(--green);border-radius:2px;transform-origin:left center}
+.match-list {display:grid;gap:6px;min-width:0}
+.match-list h2 {margin:0 0 1px;color:var(--muted);font-size:12px;font-weight:600}
+.match-option {
+  position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:4px;
+  text-align:left;min-height:40px;border:1px solid var(--line);border-radius:7px;background:var(--paper);padding:5px 9px;
+}
+.match-option[lang="en"] {font:600 clamp(14px,2.4vw,19px)/1.3 var(--serif);overflow-wrap:anywhere}
+.match-option:hover:enabled,.match-option[aria-pressed="true"] {border-color:#70ad99;background:var(--wash)}
+.match-option:disabled {color:var(--leaf-ink);border-color:var(--leaf-edge);background:var(--leaf-wash)}
+.match-option[data-miss] {border-color:var(--coral-line);background:var(--coral-tint)}
+.match-label {min-width:0}
+.match-check {flex:none;color:var(--leaf-ink);min-width:12px;text-align:center;font:600 13px system-ui}
+.match-feedback {margin:12px 0 8px;min-height:24px;color:var(--green);font-size:13px}
+.match-feedback[data-result="retry"] {color:var(--coral-ink)}
+@media (prefers-reduced-motion:no-preference) {
+  .study-float button,.match-option,.para-actions button {
+    transition:background-color 185ms var(--settle),border-color 185ms var(--settle),transform 165ms var(--settle);
+  }
+  .study-float button:active,.match-option:active,.para-actions button:active {transform:scale(.975)}
+}
+@media(max-width:570px) {
+  :root {--float-inset:8px}
+  .study-float {gap:4px}
+  .study-float .tab {padding:4px 6px;font-size:12px}
+  .inspector {padding-bottom:68px}
+  .match-option {padding-inline:6px}
+}
+@media (pointer:coarse) {
+  .para-actions button {min-height:33px}
+  .review-float,#mark-entry {min-height:40px}
+  .anchor-float {bottom:calc(var(--float-inset) + 100px)}
+}
+</style>
+<div class="study-float">
+  <section class="study-clock" id="study-clock" data-clock="idle" aria-label="学习计时">
+    <span class="clock-dot" aria-hidden="true"></span>
+    <span class="clock-time" id="clock-time" role="timer" aria-label="学习时长">00:00</span>
+    <button class="plain clock-toggle" id="clock-toggle" type="button">开始</button>
+  </section>
+  <nav aria-label="学习页面">
+    <button class="tab" id="library-tab" type="button">试卷库</button>
+    <button class="tab" id="read-tab" type="button" aria-current="page">阅读</button>
+    <button class="tab" id="match-tab" type="button">连线</button>
+  </nav>
+</div>
+<button class="tab review-float anchor-float" id="reading-anchor" type="button" disabled
+  title="贴上第一张胶带后即可返回进度"><span aria-hidden="true">📎</span>回到进度</button>
+<button class="tab review-float" id="review-tab" type="button" aria-label="复习">复习<span class="count" id="review-count" aria-hidden="true">0</span></button>
+<main>
+  <div class="workspace" id="workspace">
+    <section class="reader" id="reader" aria-label="真题原文">
+      <article class="paper">
+        <header class="paper-head">
+          <div class="paper-meta-row"><p class="meta" id="paper-meta"></p><span class="progress-tag" id="article-progress"></span></div>
+          <div class="paper-title-row"><h1 id="paper-title">Passage Two</h1><button class="plain" id="go-questions">去答题 ↓</button></div>
+          <details class="help">
+            <summary>怎么试用</summary>
+            <p>点单词查常用义，双击贴上或揭下胶带。想拆一句时，点段落旁的「选句」，再点高亮的句子。贴过胶带的词可以从侧边「复习」回看。</p>
+            <p>回形针回到最新贴胶带的位置。完成精读后可以在题目末尾标记进度。连续五分钟无操作，计时会暂停。</p>
+          </details>
+        </header>
+        <div id="passage"></div>
+        <div class="questions" id="questions"></div>
+        <p class="source" id="source"></p>
+      </article>
+    </section>
+    <div class="divider" id="divider" tabindex="0" role="separator" aria-label="调整详解栏宽度" aria-orientation="vertical"></div>
+    <aside class="inspector" id="inspector" aria-label="详细解释">
+      <header class="inspect-title"><span>详解</span><small id="inspect-kind"></small></header>
+      <div id="inspect-content"><p class="muted">点正文中的单词查看用法。想拆一句时，点段落右侧的「选句」。</p></div>
+    </aside>
+  </div>
+  <section class="library" id="library" aria-label="试卷库" hidden>
+    <div class="library-inner">
+      <header class="library-head">
+        <div><h1>试卷库</h1><span class="muted" id="library-summary"></span><p class="library-progress" id="library-progress"></p></div>
+        <div class="library-actions">
+          <a href="./导入说明.md" target="_blank" rel="noopener">导入说明</a>
+          <button type="button" class="primary" id="import-button">导入 JSON</button>
+          <input type="file" id="paper-upload" accept=".json,application/json" hidden>
+        </div>
+      </header>
+      <input class="paper-filter" type="search" id="paper-filter" aria-label="筛选真题" placeholder="按年份、套别或篇名筛选">
+      <p class="import-status" id="import-status" role="status"></p>
+      <div id="paper-list"></div>
+    </div>
+  </section>
+  <section class="review" id="review" aria-label="生词复习" hidden><div class="review-inner" id="review-body"></div></section>
+  <section class="match-page" id="matching" aria-label="易混词连线" hidden>
+    <div class="match-inner">
+      <header class="match-head"><h1>易混词连线</h1><span class="muted" id="match-progress"></span></header>
+      <div class="match-card">
+        <p class="muted" id="match-help">先点左边的英文词，再点右边对应的意思。</p>
+        <div class="match-board" id="match-board" aria-describedby="match-help">
+          <div class="match-lines" id="match-lines" aria-hidden="true"></div>
+          <div class="match-columns">
+            <div class="match-list" id="match-words"></div>
+            <div class="match-list" id="match-meanings"></div>
+          </div>
+        </div>
+        <p class="match-feedback" id="match-feedback" role="status"></p>
+        <button class="ghost" id="match-next" type="button">换一组</button>
+      </div>
+    </div>
+  </section>
+</main>
+<dialog class="idle-dialog" id="idle-dialog" aria-labelledby="idle-title" aria-describedby="idle-description">
+  <h2 id="idle-title">还在学习吗？</h2>
+  <p id="idle-description">连续 5 分钟没有操作，计时已暂停。</p>
+  <div class="dialog-actions">
+    <button class="ghost" id="idle-rest" type="button">先休息</button>
+    <button class="primary" id="idle-continue" type="button" autofocus>继续学习</button>
+  </div>
+</dialog>
+<div id="peek" class="tooltip" role="status" hidden></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script type="application/json" id="material">
+{}
+</script>
+<script type="application/json" id="dictionary-data">
+{"words": {}, "wordForms": {}, "phrases": {}, "phraseForms": {}}
+</script>
+<script src="prototype-library-data.js"></script>
+<script src="prototype-library.js"></script>
+<script src="prototype-dictionary-data.js"></script>
+<script src="prototype-word-family.js"></script>
+<script src="prototype-dictionary.js"></script>
+<script src="prototype-tape.js"></script>
+<script src="prototype-study-clock.js"></script>
+<script>
+"use strict";
+
+// The marks are source positions. The review cards group those positions by meaning.
+const saved = readLocal(readingStorage,{}) || {};
+const marks = new Map(saved.marks || []);
+const ratings = new Map(saved.ratings || []);
+const dueDates = new Map(saved.dueDates || []);
+const finished = new Set(saved.finished || []);
+const choices = new Map(saved.choices || []);
+const startedPassages = new Set([
+  ...(saved.startedPassages || []),...finished,
+  ...[...choices].filter(([,responses]) => Object.values(responses).some(Boolean)).map(([id]) => id),
+  ...[...marks.values()].map((mark) => mark.materialId),
+]);
+const closeReadPassages = new Set(saved.closeReadPassages || []);
+const progressLabels = {unread:"未开始",reading:"精读中",complete:"已精读"};
+const passages = new Set();
+const schedule = {
+  again: { label: "没想起来", days: 1 },
+  hinted: { label: "看提示才想起", days: 1 },
+  remembered: { label: "直接想起", days: 3 },
+};
+function markKey(target) { return [target.materialId,target.sentence,target.start,target.end].join(":"); }
+function groupCards(positions) {
+  const cards = new Map();
+  for (const target of positions) {
+    const key = target.cardKey;
+    if (!cards.has(key)) cards.set(key, { key, target, occurrences: [] });
+    cards.get(key).occurrences.push(target);
+    if (!cards.get(key).target.entry && target.entry) cards.get(key).target = target;
+  }
+  return [...cards.values()];
+}
+</script>
+<script>
+"use strict";
+const sampleMaterial = JSON.parse(document.getElementById("material").textContent);
+const dictionary = JSON.parse(document.getElementById("dictionary-data").textContent);
+let catalogue = paperCatalogue(), material;
+const get = (id) => document.getElementById(id);
+const norm = (s) => s.toLowerCase().replace(/[’]/g, "'").trim().replace(/\s+/g, " ");
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const wordPattern = /\p{L}+(?:[’'-]\p{L}+)*|\d+(?:\p{L}+)?/gu;
+const blankPattern = /___(\d+)___/g;
+const byWord = new Map(), byParagraph = new Map(), bySentence = new Map(), bySentencePosition = new Map();
+const lastLookupInSentence = new Map();
+let customDictionary = new Map();
+let drawTapeLayer;
+let picking = null, activeLookup = null, completed = false;
+let readingPointer = null, selectionGesture = false, skipPairedDoubleClick = false;
+let reviewCard = null, hint = false, answer = false, toastTimer;
+const postponed = new Set(), previouslyRetried = new Set();
+const reviewedThisRound = new Set();
+let manualReview = false;
+
+function displaySentence(sentence) { return sentence.displayEn || sentence.en; }
+function tokensFor(text) {
+  const stripped = text.replace(blankPattern,(blank) => " ".repeat(blank.length));
+  return [...stripped.matchAll(wordPattern)].map((m) => ({text:m[0],char:m.index}));
+}
+function renderText(text) {
+  return esc(text).replace(blankPattern,'<span class="blank">($1)</span>');
+}
+function renderMaterial(id) {
+  const next = getMaterial(id);
+  if (!next) return false;
+  material = next;
+  customDictionary = importedDictionary(next);
+  picking = null; activeLookup = null;
+  readingPointer = null; selectionGesture = false; skipPairedDoubleClick = false;
+  byWord.clear(); byParagraph.clear(); bySentence.clear(); bySentencePosition.clear();
+  lastLookupInSentence.clear(); passages.clear();
+  const knownExpressions = [...Object.keys(dictionary.phraseForms), ...customDictionary.keys()]
+    .filter((form) => form.includes(" ")).map((form) => [form,undefined]);
+  for (const sentence of material.sentences) {
+    const display = displaySentence(sentence);
+    const words = tokensFor(display);
+    const item = {...sentence,display,words,context:sentence.phrases || [],phrases:[]};
+    bySentence.set(sentence.id,item);
+    if (!byParagraph.has(item.paragraph)) byParagraph.set(item.paragraph,[]);
+    byParagraph.get(item.paragraph).push(item);
+    const wordKeys = words.map((word) => norm(word.text));
+    const context = item.context.map((phrase) => [phrase.text,{
+      head:phrase.text,meaning:phrase.meaning,use:phrase.explanation,sense:phrase.sense,
+    }]);
+    for (const [form,entry] of [...Object.entries(material.phrases || {}),...context,...knownExpressions]) {
+      const parts = norm(form).split(" ");
+      for (let i = 0; i <= words.length - parts.length; i++) {
+        if (parts.every((part,j) => part === wordKeys[i+j]) &&
+            !display.slice(words[i].char,words[i+parts.length-1].char).includes("___") &&
+            !item.phrases.some((p) => p.start === i && p.end === i + parts.length - 1)) {
+          item.phrases.push({start:i,end:i+parts.length-1,entry});
+        }
+      }
+    }
+    item.phrases.sort((a,b) => (b.end-b.start)-(a.end-a.start));
+  }
+  const {label,title,first,last} = material.info;
+  get("paper-meta").textContent = material.exam + " · " + label + " · " + first + "–" + last;
+  get("paper-title").textContent = material.englishTitle || title;
+  get("passage").innerHTML = '<div class="tape-layer" aria-hidden="true"></div>' +
+    [...byParagraph].map(([number,sentences]) => renderParagraph(number,sentences)).join("");
+  drawTapeLayer = createTapeLayer(get("passage").firstElementChild);
+  for (const el of get("passage").querySelectorAll("[data-token]")) bySentencePosition.set(el.dataset.token,el);
+  renderQuestions();
+  renderArticleProgress();
+  const source = get("source");
+  source.textContent = material.sourceNote || "篇目来源　" + material.exam + " · " + label;
+  if (material.verificationNotes.length) {
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    summary.textContent = "待核对项（" + material.verificationNotes.length + "）";
+    details.append(summary);
+    for (const note of material.verificationNotes) {
+      const line = document.createElement("div");
+      line.textContent = note;
+      details.append(line);
+    }
+    source.append(details);
+  }
+  get("inspect-kind").textContent = "";
+  get("inspect-content").innerHTML = '<p class="muted">' + (material.sourceOnly ?
+    "本篇已收录原题，逐句讲解待补。仍可查词和标记生词。" :
+    "点正文中的单词查看常用义。想拆一句时，点段落右侧的「选句」。") + '</p>';
+  get("inspector").scrollTop = 0;
+  completed = finished.has(id);
+  updateCompleted();
+  markState();
+  refreshTapes();
+  get("reader").scrollTop = 0;
+  return true;
+}
+
+function renderWordSentence(sentence) {
+  let pos = 0;
+  const pieces = [];
+  sentence.words.forEach((word, index) => {
+    const key = sentence.id + ":" + index;
+    pieces.push(renderText(sentence.display.slice(pos, word.char)));
+    pieces.push('<span class="word" data-token="' + key + '">' + esc(word.text) + '</span>');
+    byWord.set(key,{sentence:sentence.id, index});
+    pos = word.char + word.text.length;
+  });
+  return pieces.join("") + renderText(sentence.display.slice(pos));
+}
+function renderParagraph(number,sentences) {
+  const label = sentences[0].paragraphLabel;
+  const sectionName = label ? label + " 段" : "第 " + number + " 段";
+  const hasTranslation = sentences.every((s) => s.literal || s.zh);
+  const hasLiteral = hasTranslation && sentences.every((s) => s.literal);
+  const translation = hasLiteral ? "直译" : "译文";
+  return '<section class="paragraph" data-paragraph="' + number + '" aria-label="' + esc(sectionName) + '">' +
+    '<div class="para-actions">' + (material.sourceOnly ? '' :
+      '<button type="button" data-pick="' + number + '" aria-label="' + esc(sectionName) + '选句" aria-pressed="false">选句</button>') +
+    (hasTranslation ? '<button type="button" data-translate="' + number + '" aria-label="展开' + esc(sectionName) + translation +
+      '" aria-expanded="false" hidden>' + translation + '</button>' : '') + '</div>' +
+    '<p class="english" lang="en">' + (label ? '<b>' + esc(label) + ') </b>' : '') +
+    sentences.map((s) => '<span class="sentence" data-sentence="' + s.id + '">' + renderWordSentence(s) + '</span>').join(" ") + '</p>' +
+    (hasTranslation ? '<div class="paragraph-translation" data-translated="' + number + '" hidden><span class="caption">' +
+      (hasLiteral ? "段落直译" : "段落参考译文") + '</span><p>' + sentences.map((s) => esc(s.literal || s.zh)).join("") + '</p></div>' : '') +
+    '</section>';
+}
+function renderQuestions() {
+  const {first,last} = material.info;
+  const bank = material.wordBank?.length ? '<div class="word-bank" lang="en">' + material.wordBank.map(({letter,word}) =>
+    '<span>' + esc(letter) + ') ' + esc(word) + '</span>').join("") + '</div>' : "";
+  const answered = choices.get(material.id) || {};
+  get("questions").innerHTML = '<h2>Questions ' + first + '–' + last + '</h2>' + bank + material.questions.map((q) => {
+    const pick = answered[q.id];
+    let options;
+    if (material.key === "c1" || material.key === "c2") {
+      options = q.options.map(([key,en]) => '<label><input type="radio" data-question="' + q.id + '" name="q' + q.id +
+        '" value="' + esc(key) + '"' + (key === pick ? " checked" : "") + '> ' + esc(key) + ') ' + esc(en) + '</label>').join("");
+    } else {
+      options = '<select class="choice-select" data-question="' + q.id + '" aria-label="第 ' + q.id + ' 题作答"><option value="">请选择</option>' +
+        q.options.map(([key,en]) => '<option value="' + esc(key) + '"' + (key === pick ? " selected" : "") + '>' +
+          esc(key) + (material.key === "a" ? ') ' + esc(en) : "") + '</option>').join("") + '</select>';
+    }
+    return '<fieldset class="question" lang="en"><legend>' + q.id + '. ' + esc(q.prompt) + '</legend>' + options +
+      '<div data-answer hidden><p class="reference" lang="zh-CN">' + (q.answer ? '参考答案 ' + esc(q.answer) : '未附参考答案') + '</p>' +
+      (q.explanation ? '<p class="question-note" lang="zh-CN">' + esc(q.explanation) + '</p>' : '') + '</div></fieldset>';
+  }).join("") + '<div class="finish"><button class="primary" id="finish-below">本篇做完</button>' +
+    '<button class="ghost" type="button" id="close-read-toggle"></button>' +
+    '<button class="plain" id="back-article">回到文章 ↑</button><p class="muted" id="finish-note"></p></div>';
+  get("finish-below").onclick = finishPassage;
+  get("close-read-toggle").onclick = toggleCloseRead;
+  get("back-article").onclick = () => get("reader").scrollTo({top:0,behavior:"auto"});
+}
+
+function flash(message) {
+  clearTimeout(toastTimer);
+  get("toast").textContent = message;
+  get("toast").hidden = false;
+  toastTimer = setTimeout(() => {get("toast").hidden = true;}, 2200);
+}
+let peekTimer, peekRevealScroll = null;
+const runningEffects = new WeakMap();
+function stopEffect(element) {
+  runningEffects.get(element)?.cancel();
+  runningEffects.delete(element);
+}
+function playEffect(element, frames, duration, after, easing = "cubic-bezier(.22,1,.36,1)") {
+  stopEffect(element);
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !element.animate) {
+    after?.();
+    return;
+  }
+  const effect = element.animate(frames, { duration, easing });
+  runningEffects.set(element,effect);
+  effect.onfinish = () => {
+    if (runningEffects.get(element) !== effect) return;
+    runningEffects.delete(element);
+    after?.();
+  };
+}
+function smoothIn(element, {distance = 4, scale = 1, duration = 210} = {}) {
+  // Sample a critically damped response. Normalize its tail so it settles at the final position.
+  const settle = (t) => 1 - (1 + 7*t)*Math.exp(-7*t);
+  const steps = Array.from({length:13}, (_,i) => {
+    const t = i/12, rest = 1 - settle(t)/settle(1);
+    return {offset:t,opacity:1-.30*rest,
+      transform:"translateY("+(distance*rest)+"px) scale("+(1-(1-scale)*rest)+")"};
+  });
+  playEffect(element,steps,duration,undefined,"linear");
+}
+function closePeek(soft = false) {
+  clearTimeout(peekTimer);
+  peekRevealScroll = null;
+  const peek = get("peek");
+  if (soft === true && !peek.hidden) {
+    playEffect(peek, [{opacity:1},{opacity:0}], 105, () => {peek.hidden = true;});
+  } else {
+    stopEffect(peek);
+    peek.hidden = true;
+  }
+}
+function showPeek(target, anchor) {
+  const peek = get("peek");
+  const item = dictionaryEntry(target);
+  const senses = peekDefinitions(item).map(([pos,zh]) =>
+    '<span class="peek-sense">' + (pos ? '<span class="peek-pos">' + esc(pos) + '</span> ' : '') +
+    esc(zh) + '</span>').join(" · ");
+  peek.innerHTML = '<b lang="en">' + esc(item?.head || target.text) + "</b>" +
+    '<span class="peek-senses">' + (senses || "本地词表暂无收录") + '</span>';
+  peek.hidden = false;
+  clearTimeout(peekTimer);
+  peekTimer = setTimeout(() => closePeek(true),item?.senses.length > 2 ? 4400 : 3100);
+  const lastLine = () => [...anchor.getClientRects()].filter((box) => box.width > 0).at(-1) || anchor.getBoundingClientRect();
+  let rect = lastLine();
+  const reader = get("reader");
+  const pane = reader.getBoundingClientRect();
+  const width = peek.offsetWidth, height = peek.offsetHeight;
+  const bottom = Math.min(window.innerHeight,pane.bottom) - 8;
+  const belowGap = 8;
+  const needed = rect.bottom + belowGap + height - bottom;
+  if (needed > 0) {
+    const before = reader.scrollTop;
+    reader.scrollTop += Math.ceil(needed);
+    if (reader.scrollTop !== before) {
+      peekRevealScroll = reader.scrollTop;
+      rect = lastLine();
+    }
+  }
+  const left = Math.max(pane.left + 8, Math.min(rect.left, pane.right - width - 8));
+  const nub = Math.max(8,Math.min(width-8,rect.left+rect.width/2-left));
+  peek.style.setProperty("--peek-nub",nub+"px");
+  Object.assign(peek.style,{left:left+"px",top:(rect.bottom+belowGap)+"px"});
+  smoothIn(peek,{distance:-4,scale:.98,duration:205});
+}
+function makeTarget(sentence, start, end, entry) {
+  const first = sentence.words[start], last = sentence.words[end];
+  const text = sentence.display.slice(first.char, last.char + last.text.length);
+  return {materialId:material.id,sentence:sentence.id,sourceText:sentence.display,start,end,entry,text,
+    cardKey: entry?.sense || (entry?.meaning ? norm(entry.head)+"｜"+entry.meaning : norm(text)) };
+}
+function wordTarget(sentence, index) {
+  const key = norm(sentence.words[index].text);
+  const single = sentence.phrases.find((phrase) => phrase.start === index && phrase.end === index);
+  const entry = material.occurrenceOverrides?.[sentence.id]?.[index] ||
+    material.overrides?.[sentence.id]?.[key] || (Object.hasOwn(material.words || {},key) && material.words[key]) ||
+    single?.entry;
+  return makeTarget(sentence,index,index,entry);
+}
+function dictionaryEntry(target) {
+  const form = norm(target.text);
+  const local = (target.materialId === material.id ? customDictionary : importedDictionary(getMaterial(target.materialId))).get(form);
+  if (target.start !== target.end) return dictionary.phrases[dictionary.phraseForms[form]] || local || offlineEntry(target.text,form);
+  if (target.text === "US") return {head:"US",senses:[["缩写","美国","short for the United States",""]]};
+  if (/^\d+$/.test(form)) return {head:target.text,senses:[["数词","数字 " + target.text,"a numeral",""]]};
+  return dictionary.words[dictionary.wordForms[form]] || local || offlineEntry(target.text,form);
+}
+function findCompanion(target) {
+  const sentence = bySentence.get(target.sentence);
+  if (target.start !== target.end) return null;
+  for (const {start,end,entry} of sentence.phrases) {
+    if (start === end || start > target.start || end < target.end) continue;
+    const phrase = makeTarget(sentence,start,end,entry);
+    if (dictionaryEntry(phrase)) return phrase;
+  }
+  for (let length = 5; length >= 2; length--) {
+    for (let start = Math.max(0,target.end-length+1); start <= target.start; start++) {
+      const end = start + length - 1;
+      if (end >= sentence.words.length) continue;
+      const phrase = makeTarget(sentence,start,end);
+      if (hasOnlyWordGaps(phrase.text) && dictionaryEntry(phrase)) return phrase;
+    }
+  }
+  return null;
+}
+function hasOnlyWordGaps(text) {
+  return !text.replace(wordPattern,"").trim();
+}
+function memoryFor(cardKey) {
+  return ratings.get(cardKey) || (previouslyRetried.has(cardKey) ? "again" : "queued");
+}
+function memoryTag(state) {
+  return '<span class="memory-tag" data-memory="' + state + '">' +
+    esc(schedule[state]?.label || "待复习") + "</span>";
+}
+function passageProgress(id) {
+  return closeReadPassages.has(id) ? "complete" : startedPassages.has(id) ? "reading" : "unread";
+}
+function renderArticleProgress() {
+  const progress = passageProgress(material.id);
+  const label = get("article-progress");
+  label.dataset.progress = progress;
+  label.textContent = progressLabels[progress];
+  const button = get("close-read-toggle");
+  button.textContent = progress === "complete" ? "撤回已精读" : "标为已精读";
+  button.setAttribute("aria-pressed",String(progress === "complete"));
+}
+function startCurrentPassage(persist = true) {
+  if (startedPassages.has(material.id)) return;
+  startedPassages.add(material.id);
+  renderArticleProgress();
+  if (persist) saveReading();
+}
+function toggleCloseRead() {
+  const id = material.id;
+  const alreadyRead = closeReadPassages.has(id);
+  startCurrentPassage(false);
+  if (alreadyRead) closeReadPassages.delete(id);
+  else closeReadPassages.add(id);
+  renderArticleProgress();
+  saveReading();
+  flash(alreadyRead ? "本篇已恢复为精读中" : "已精读 " + closeReadPassages.size + " 篇");
+}
+function latestMark() {
+  return [...marks.values()].at(-1);
+}
+function refreshAnchorButton() {
+  const mark = latestMark();
+  const button = get("reading-anchor");
+  button.disabled = !mark;
+  const source = mark && getMaterial(mark.materialId);
+  button.title = source ? source.exam + " · " + source.info.label + " · " + mark.text :
+    "贴上第一张胶带后即可返回进度";
+  button.setAttribute("aria-label",mark ? "回到阅读进度 " + mark.text : "回到阅读进度");
+}
+function markedInMaterial() {
+  return [...marks.values()].filter((target) => target.materialId === material.id &&
+    target.sourceText === bySentence.get(target.sentence)?.display);
+}
+function refreshTapes(changedKey,peeling) {
+  if (!drawTapeLayer) return;
+  const targets = markedInMaterial().map((target) => ({
+    key:markKey(target),
+    first:bySentencePosition.get(target.sentence + ":" + target.start),
+    last:bySentencePosition.get(target.sentence + ":" + target.end),
+  }));
+  drawTapeLayer(targets,changedKey,peeling);
+}
+function markState() {
+  const positions = markedInMaterial();
+  for (const [key, el] of bySentencePosition) {
+    const token = byWord.get(key);
+    const covers = (target) => target && target.sentence === token.sentence &&
+      target.sourceText === bySentence.get(token.sentence).display &&
+      target.start <= token.index && token.index <= target.end;
+    el.classList.toggle("marked",positions.some(covers));
+    el.classList.toggle("current",covers(activeLookup));
+  }
+  const due = groupCards(marks.values()).filter((card) => isDue(card.key)).length;
+  get("review-count").textContent = due;
+  get("review-tab").setAttribute("aria-label",due ? "复习，" + due + " 项到期" : "复习");
+}
+function toggleMark(target) {
+  const key = markKey(target);
+  const peeling = marks.has(key);
+  if (peeling) {
+    marks.delete(key);
+    if (!groupCards(marks.values()).some((card) => card.key === target.cardKey)) {
+      ratings.delete(target.cardKey);
+      dueDates.delete(target.cardKey);
+      postponed.delete(target.cardKey);
+      previouslyRetried.delete(target.cardKey);
+    }
+    flash("已揭下「" + target.text + "」的胶带");
+  } else {
+    marks.set(key,target);
+    flash("已标记「"+target.text+"」，可在复习中找到");
+  }
+  startCurrentPassage(false);
+  markState();
+  refreshTapes(key,peeling);
+  refreshAnchorButton();
+  saveReading();
+  if (activeLookup) renderLookup();
+}
+function explanation(topic, title, html) {
+  return '<section class="explain" data-topic="' + topic + '"><h3>' + esc(title) + '</h3>' + html + '</section>';
+}
+const confusableWords = {
+  economist:"economics", retirement:"requirement", pension:"passion",
+  occupation:"occasion", trend:"tend", tend:"trend", vary:"very",
+  quit:"quite", career:"carrier", isolation:"insulation", physical:"physician",
+};
+function spellingPair(entry) {
+  const first = entry.head, second = confusableWords[first];
+  if (!second) return "";
+  let start = 0, tail = 0;
+  const shorter = Math.min(first.length,second.length);
+  while (start < shorter && first[start] === second[start]) start++;
+  while (tail < shorter - start && first.at(-1-tail) === second.at(-1-tail)) tail++;
+  const spelling = (word) => '<b lang="en">' + esc(word.slice(0,start)) +
+    '<span class="spell-difference">' + esc(word.slice(start,word.length-tail)) +
+    "</span>" + esc(word.slice(word.length-tail)) + "</b>";
+  return '<div class="spell-pair">' + spelling(first) +
+    '<span aria-hidden="true">↔</span>' + spelling(second) + '</div>';
+}
+function entryExtras(entry) {
+  return (entry?.confusion ? explanation("confusion","易混词",
+    spellingPair(entry) + '<p>' + esc(entry.confusion) + '</p>') : '') +
+    (entry?.morph ? explanation("morph","构词拆解",'<p>' + esc(entry.morph) + '</p>') : '');
+}
+function dictionaryExtras(item) {
+  if (!item) return "";
+  const other = dictionary.words[confusableWords[item.head]];
+  const summary = (word) => '<p><b lang="en">' + esc(word.head) + '</b> · ' +
+    esc(word.senses.slice(0,2).map((sense) => sense[1]).join("；")) + '</p>';
+  return other ? explanation("confusion","易混词",spellingPair(item) + summary(item) + summary(other)) : '';
+}
+function dictionarySenses(item) {
+  if (!item) return '<p>本地词典暂未收录这个写法。<a href="https://dictionary.cambridge.org/zhs/" target="_blank" rel="noopener noreferrer">打开剑桥词典 ↗</a></p>';
+  return '<ol class="lex-senses">' + item.senses.map(([pos,zh,en,example]) =>
+    '<li>' + (pos ? '<span class="lex-pos">' + esc(pos) + '</span>' : '') + '<b>' + esc(zh) + '</b>' +
+    (en ? '<p lang="en">' + esc(en) + '</p>' : '') +
+    (example ? '<p class="lex-example" lang="en">' + esc(example) + '</p>' : '') + '</li>'
+  ).join("") + '</ol>';
+}
+function wordFormsPanel(item) {
+  if (!item?.variants?.length) return "";
+  return explanation("morph","还可能是这些词形",item.variants.map((entry) =>
+    '<p><b lang="en">' + esc(entry.head) + '</b>' + (entry.type ? ' · ' + esc(entry.type) : '') + '</p>' +
+    dictionarySenses({senses:formSenses(entry).slice(0,2)})
+  ).join(""));
+}
+function wordFormationPanel(target,item) {
+  if (target.start !== target.end) return "";
+  const {steps,related} = wordFormation(norm(target.text),item);
+  const curated = !steps.length && item?.morph ? '<p>' + esc(item.morph) + '</p>' : '';
+  const baseMeaning = (base) => {
+    const entry = dictionary.words[dictionary.wordForms[base]] || offlineEntry(base,base);
+    return entry?.senses[0]?.[1] ? shortGloss(entry.senses[0][1]) : "";
+  };
+  const parts = steps.map((step) => {
+    const base = '<b lang="en">' + esc(step.base) + '</b>';
+    const affix = '<b class="affix" lang="en">' + esc(step.affix) + '</b>';
+    const formula = step.prefix ? affix + ' <span>+</span> ' + base : base + ' <span>+</span> ' + affix;
+    const gloss = baseMeaning(step.base);
+    return '<div class="formation-step"><p class="formation-formula"><b lang="en">' + esc(step.word) +
+      '</b><span aria-hidden="true">←</span>' + formula + '</p><p>' + esc(step.meaning) +
+      (step.spelling ? '。' + esc(step.spelling) : '') + '</p>' +
+      (gloss ? '<p>词基 <span lang="en">' + esc(step.base) + '</span> · ' + esc(gloss) + '</p>' : '') + '</div>';
+  }).join("");
+  const family = related.length ? '<div class="formation-family">' +
+    (parts || curated ? '<p><strong>同词族</strong></p>' : '') +
+    related.map((word) => {
+      const gloss = baseMeaning(word);
+      return '<p><b lang="en">' + esc(word) + '</b>' + (gloss ? ' · ' + esc(gloss) : '') + '</p>';
+    }).join("") + '</div>' : '';
+  return parts || family || curated ? explanation("morph",parts || curated ? "构词来源" : "同词族",parts + curated + family) : '';
+}
+function englishDetails(item) {
+  if (!item?.definitions?.length) return "";
+  return '<details class="lex-english"><summary>查看英英释义</summary><ul lang="en">' +
+    item.definitions.map(([pos,definition]) => '<li><span class="lex-pos" lang="zh-CN">' +
+      esc(pos) + '</span>' + esc(definition) + '</li>').join("") + '</ul></details>';
+}
+function updateInspector(html, animate) {
+  const content = get("inspect-content");
+  content.innerHTML = html;
+  if (animate) smoothIn(content,{distance:4,duration:230});
+}
+function renderLookup(animate = false) {
+  const target = activeLookup;
+  const item = dictionaryEntry(target);
+  const companion = findCompanion(target);
+  const companionItem = companion && dictionaryEntry(companion);
+  const marked = marks.has(markKey(target));
+  get("inspect-kind").textContent = target.start === target.end ? "词典 · 单词" : "词典 · 短语";
+  updateInspector('<h2 lang="en">' + esc(item?.head || target.text) + '</h2>' +
+    (item?.ipa || item?.type || (item && norm(target.text) !== norm(item.head))
+      ? '<p class="muted">' + [item?.ipa,
+        item && norm(target.text) !== norm(item.head) ?
+          (target.start === target.end ? "原文 " + target.text + " → 原形 " + item.head : "原文写法 " + target.text) : "",
+        item?.type].filter(Boolean).map(esc).join(" · ") + '</p>'
+      : '') +
+    explanation("meaning","常用义项",dictionarySenses(item) + englishDetails(item)) +
+    '<div class="inspect-actions"><button class="ghost" id="mark-entry">' + (marked ? "揭下胶带" : "贴上标记") + '</button>' +
+    (marked ? memoryTag(memoryFor(target.cardKey)) : '') +
+    (companionItem ? '<button class="plain" id="lookup-companion">查搭配 ' + esc(companionItem.head) + '</button>' : '') + '</div>' +
+    wordFormsPanel(item) + wordFormationPanel(target,item) + dictionaryExtras(item) +
+    (item?.offline || item?.variants?.length ? '<small class="lex-source">ECDICT 离线词典</small>' : ''), animate);
+  get("mark-entry").onclick = () => {
+    toggleMark(target);
+    get("mark-entry")?.focus({preventScroll:true});
+  };
+  if (get("lookup-companion")) get("lookup-companion").onclick = () => { showLookup(companion); };
+}
+function showLookup(target, anchor) {
+  startCurrentPassage();
+  activeLookup = target;
+  lastLookupInSentence.set(target.sentence,target);
+  if (anchor) showPeek(target,anchor);
+  else closePeek();
+  markState();
+  get("inspector").scrollTop = 0;
+  renderLookup(true);
+}
+function selectParagraph(number) {
+  picking = picking === number ? null : number;
+  closePeek();
+  for (const section of get("passage").querySelectorAll(".paragraph")) {
+    const on = Number(section.dataset.paragraph) === picking;
+    section.classList.toggle("picking",on);
+    const button = section.querySelector("[data-pick]");
+    if (button) {
+      button.setAttribute("aria-pressed",String(on));
+      button.textContent = on ? "选句中" : "选句";
+    }
+    for (const s of section.querySelectorAll(".sentence")) {
+      if (on) {
+        s.tabIndex = 0;
+        s.setAttribute("role","button");
+      } else {
+        s.removeAttribute("tabindex");
+        s.removeAttribute("role");
+      }
+    }
+  }
+}
+function inspectSentence(sentence) {
+  const focusWasInside = document.activeElement?.matches(".sentence");
+  const focusButton = get("passage").querySelector('[data-pick="'+sentence.paragraph+'"]');
+  window.getSelection()?.removeAllRanges();
+  startCurrentPassage();
+  selectParagraph(null); closePeek(); activeLookup = null;
+  markState();
+  get("inspect-kind").textContent = "句子解析";
+  const title = '<div class="analysis-block"><h2 class="sentence-title" lang="en">' + renderText(sentence.display) + '</h2>';
+  if (material.key === "a" && !completed && sentence.display !== sentence.display.replace(blankPattern,"")) {
+    updateInspector(title + '<p class="muted">这句话含有选词填空。点「本篇做完」后可查看完整句子及讲解。</p></div>',true);
+    if (focusWasInside) focusButton?.focus({preventScroll:true});
+    return;
+  }
+  const translation = sentence.literal || sentence.zh;
+  const text = sentence.en === sentence.display ? title :
+    '<div class="analysis-block"><h2 class="sentence-title" lang="en">' + renderText(sentence.en) + '</h2>';
+  updateInspector(text +
+    (sentence.chunks?.length ? explanation("chunks","意群对照",'<dl>' + sentence.chunks.map((c) =>
+      '<dt lang="en">' + esc(c.en) + "</dt><dd>" + esc(c.zh) + "</dd>").join("") + '</dl>') : "") +
+    (sentence.grammar || sentence.gist ? explanation("structure","结构与指代",
+      '<p>' + esc(sentence.grammar || sentence.gist) + '</p>' +
+      (sentence.gist && sentence.grammar ? '<p>' + esc(sentence.gist) + '</p>' : "")) : "") +
+    (sentence.steps?.length ? explanation("usage","怎样读这句",'<ol>' + sentence.steps.map((step) =>
+      '<li>' + esc(step) + '</li>').join("") + '</ol>') : "") +
+    (sentence.trap ? explanation("confusion","容易误读的地方",'<p>' + esc(sentence.trap) + '</p>') : "") +
+    sentenceVocabulary(sentence) +
+    (translation ? explanation("meaning",sentence.literal ? "单句直译" : "单句参考译文",
+      '<p class="definition">' + esc(translation) + '</p>') : "") +
+    (!(translation || sentence.context.length || sentence.grammar || sentence.gist || sentence.chunks?.length || sentence.steps?.length || sentence.trap) ?
+      '<p class="muted">这一句暂未附解析。</p>' : '') + '</div>',true);
+  get("inspector").scrollTop = 0;
+  if (focusWasInside) focusButton?.focus({preventScroll:true});
+}
+
+function sentenceVocabulary(sentence) {
+  const candidates = [lastLookupInSentence.get(sentence.id)];
+  for (const phrase of sentence.phrases) candidates.push(makeTarget(sentence,phrase.start,phrase.end,phrase.entry));
+  sentence.words.forEach((_,index) => candidates.push(wordTarget(sentence,index)));
+  const entries = new Map();
+  for (const target of candidates) {
+    if (target?.entry?.meaning && !entries.has(target.cardKey)) entries.set(target.cardKey,target);
+  }
+  for (const phrase of sentence.context) {
+    const key = phrase.sense || norm(phrase.text) + "｜" + phrase.meaning;
+    if (!entries.has(key)) entries.set(key,{text:phrase.text,entry:{meaning:phrase.meaning,use:phrase.explanation}});
+  }
+  if (!entries.size) return "";
+  const list = (items) => '<ul class="sentence-words">' + items.map((target) =>
+    '<li><span class="sentence-word-head"><b lang="en">' + esc(target.text) + '</b> · ' +
+    esc(target.entry.meaning) + '</span>' +
+    (target.entry.use ? '<p>' + esc(target.entry.use) + '</p>' : '') + '</li>'
+  ).join("") + '</ul>';
+  const values = [...entries.values()];
+  const extra = values.slice(2);
+  return explanation("usage","本句词语用法",list(values.slice(0,2)) +
+    (extra.length ? '<details class="sentence-more"><summary>展开其余词语</summary>' + list(extra) + '</details>' : ''));
+}
+
+function lookupSelection() {
+  const selection = window.getSelection();
+  if (!selection || selection.isCollapsed || !selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  const head = range.startContainer.parentElement?.closest(".sentence");
+  const tail = range.endContainer.parentElement?.closest(".sentence");
+  if (!head || head !== tail || !get("passage").contains(head)) return;
+  const selected = norm(selection.toString());
+  const length = [...selected.matchAll(wordPattern)].length;
+  if (length < 2) return;
+  const sentence = bySentence.get(head.dataset.sentence);
+  for (let start = 0; start + length <= sentence.words.length; start++) {
+    const end = start + length - 1;
+    const first = bySentencePosition.get(sentence.id+":"+start);
+    const last = bySentencePosition.get(sentence.id+":"+end);
+    if (!range.intersectsNode(first) || !range.intersectsNode(last)) continue;
+    const known = sentence.phrases.find((phrase) => phrase.start === start && phrase.end === end);
+    const target = makeTarget(sentence,start,end,known?.entry);
+    if (norm(target.text) !== selected) continue;
+    if (known || dictionaryEntry(target)) { showLookup(target,range); return; }
+  }
+  closePeek();
+  flash("这个搭配暂未收录。想理解这段表达，可以用「选句」看原句解析。");
+}
+
+get("passage").addEventListener("pointerdown",(event) => {
+  if (event.button !== 0) return;
+  readingPointer = {id:event.pointerId,x:event.clientX,y:event.clientY};
+  selectionGesture = false;
+});
+get("passage").addEventListener("pointerup",(event) => {
+  const from = readingPointer;
+  readingPointer = null;
+  selectionGesture = from?.id === event.pointerId &&
+    Math.hypot(event.clientX-from.x,event.clientY-from.y) > 4;
+  if (picking !== null || event.button !== 0 || (!selectionGesture && event.pointerType !== "touch")) return;
+  if (!event.target.closest(".sentence")) return;
+  setTimeout(lookupSelection,0);
+});
+get("passage").addEventListener("pointercancel",() => {
+  readingPointer = null;
+  selectionGesture = false;
+});
+get("passage").addEventListener("click",(event) => {
+  if (event.detail <= 1) skipPairedDoubleClick = false;
+  const pick = event.target.closest("[data-pick]");
+  if (pick) { selectParagraph(Number(pick.dataset.pick)); return; }
+  const translation = event.target.closest("[data-translate]");
+  if (translation && completed) {
+    const id = Number(translation.dataset.translate);
+    if (passages.has(id)) passages.delete(id); else passages.add(id);
+    translation.setAttribute("aria-expanded",String(passages.has(id)));
+    const paragraph = translation.closest(".paragraph").getAttribute("aria-label");
+    translation.setAttribute("aria-label",(passages.has(id) ? "收起" : "展开")+paragraph+translation.textContent);
+    get("passage").querySelector('[data-translated="'+id+'"]').hidden = !passages.has(id);
+    closePeek(); return;
+  }
+  const sentenceEl = event.target.closest(".sentence");
+  if (!sentenceEl) return;
+  const sentence = bySentence.get(sentenceEl.dataset.sentence);
+  if (picking === sentence.paragraph) { inspectSentence(sentence); return; }
+  const word = event.target.closest("[data-token]");
+  if (!word) return;
+  const selection = window.getSelection();
+  const afterSentence = get("inspect-kind").textContent === "句子解析";
+  if ((event.detail > 1 && !afterSentence) || (selectionGesture && selection && !selection.isCollapsed)) return;
+  // A fast word click after choosing a sentence can be the second click of a native double-click.
+  skipPairedDoubleClick = afterSentence && event.detail > 1;
+  selection?.removeAllRanges();
+  const index = byWord.get(word.dataset.token).index;
+  showLookup(wordTarget(sentence,index),word);
+});
+get("passage").addEventListener("dblclick",(event) => {
+  const word = event.target.closest("[data-token]");
+  if (!word) return;
+  if (skipPairedDoubleClick) { skipPairedDoubleClick = false; return; }
+  if (selectionGesture || picking !== null) return;
+  const {sentence,index} = byWord.get(word.dataset.token);
+  closePeek();
+  event.preventDefault();
+  window.getSelection()?.removeAllRanges();
+  toggleMark(wordTarget(bySentence.get(sentence),index));
+});
+get("passage").addEventListener("keydown",(event) => {
+  const s = event.target.closest(".sentence");
+  if (!s || !["Enter"," "].includes(event.key)) return;
+  const sentence = bySentence.get(s.dataset.sentence);
+  if (sentence?.paragraph === picking) { event.preventDefault(); inspectSentence(sentence); }
+});
+document.addEventListener("keydown",(event) => {
+  if (event.key === "Escape") {
+    if (picking !== null && document.activeElement?.matches(".sentence")) {
+      get("passage").querySelector('[data-pick="'+picking+'"]').focus();
+    }
+    selectParagraph(null); closePeek();
+  }
+});
+document.addEventListener("pointerdown",(event) => {
+  if (!event.target.closest("[data-token]")) closePeek();
+  if (picking !== null && !event.target.closest(".paragraph.picking, [data-pick]")) selectParagraph(null);
+});
+get("reader").addEventListener("scroll",() => {
+  if (peekRevealScroll !== null && Math.abs(get("reader").scrollTop-peekRevealScroll) < 1) {
+    peekRevealScroll = null;
+    return;
+  }
+  closePeek();
+},{passive:true});
+window.addEventListener("resize",closePeek,{passive:true});
+
+function finishPassage() {
+  if (completed) {
+    get("reader").scrollTo({top:0,behavior:"auto"});
+    return;
+  }
+  completed = true;
+  startCurrentPassage(false);
+  finished.add(material.id);
+  updateCompleted();
+  saveReading();
+  get("reader").scrollTo({top:0,behavior:"auto"});
+  flash(get("finish-note").textContent);
+}
+function updateCompleted() {
+  const buttons = [...get("passage").querySelectorAll("[data-translate]")];
+  get("finish-below").textContent = completed ? "已做完 · 回到文章" : "本篇做完";
+  get("finish-note").textContent = completed ?
+    (buttons.length ? "段落译文和参考答案已开放" : "已开放参考答案") :
+    (buttons.length ? "做完后可以查看段落译文和参考答案" : "做完后可以查看参考答案");
+  buttons.forEach((b) => { b.hidden = !completed; });
+  get("questions").querySelectorAll("[data-answer]").forEach((p) => { p.hidden = !completed; });
+}
+get("go-questions").onclick = () => {
+  startCurrentPassage();
+  get("questions").scrollIntoView({block:"start",behavior:"auto"});
+};
+get("questions").onchange = (event) => {
+  const {question} = event.target.dataset;
+  if (!question) return;
+  startCurrentPassage(false);
+  const savedChoices = choices.get(material.id) || {};
+  savedChoices[question] = event.target.value;
+  choices.set(material.id,savedChoices);
+  saveReading();
+};
+
+function reviewTapeStyle(target) { return ' style="--tape-color:' + tapeColor(markKey(target)) + '"'; }
+function reviewSentence(target) {
+  const tokens = tokensFor(target.sourceText);
+  const first = tokens[target.start].char;
+  const word = tokens[target.end];
+  const last = word.char + word.text.length;
+  return renderText(target.sourceText.slice(0,first)) + '<span class="hint-mark"' + reviewTapeStyle(target) + '>' +
+    esc(target.sourceText.slice(first,last)) + '</span>' + renderText(target.sourceText.slice(last));
+}
+function changeReviewCard(card) {
+  reviewCard = card;
+  hint = false;
+  answer = false;
+}
+function isDue(key) { return (dueDates.get(key) || 0) <= Date.now(); }
+function nextDue(days) {
+  const date = new Date();
+  date.setHours(0,0,0,0);
+  date.setDate(date.getDate() + days);
+  return date.getTime();
+}
+function locateMarkedSource(target) {
+  if (!openMaterial(target.materialId)) return null;
+  const exact = bySentence.get(target.sentence);
+  const source = exact?.display === target.sourceText ? exact :
+    [...bySentence.values()].find((sentence) => sentence.display === target.sourceText);
+  if (!source) return null;
+  const word = bySentencePosition.get(source.id + ":" + target.start);
+  return word ? {source,word} : null;
+}
+function focusSourceWord(word) {
+  word.scrollIntoView({block:"center",inline:"nearest",behavior:"instant"});
+  word.tabIndex = -1;
+  word.focus({preventScroll:true});
+}
+function openReviewSource(target) {
+  const match = locateMarkedSource(target);
+  if (!match) { flash("这处原句已重新分段，可以在复习卡片查看原句。"); return; }
+  showLookup(makeTarget(match.source,target.start,target.end,target.entry));
+  focusSourceWord(match.word);
+}
+get("reading-anchor").onclick = () => {
+  const target = latestMark();
+  if (!target) return;
+  const match = locateMarkedSource(target);
+  if (!match) { flash("这处原句已重新分段，已回到对应篇目。"); return; }
+  selectParagraph(null);
+  focusSourceWord(match.word);
+  match.word.classList.add("anchor-target");
+  setTimeout(() => match.word.classList.remove("anchor-target"),1300);
+};
+function renderReview() {
+  const cards = groupCards(marks.values());
+  const eligible = (c) => manualReview ? !reviewedThisRound.has(c.key) : isDue(c.key);
+  const available = cards.filter((c) => eligible(c) && !postponed.has(c.key));
+  if (available.length === 0 && postponed.size) {
+    postponed.clear();
+    for (const card of cards) if (eligible(card)) available.push(card);
+  }
+  if (!reviewCard || !available.some((card)=>card.key===reviewCard.key)) changeReviewCard(available[0]);
+  const header = '<header class="review-head"><h1>复习</h1><span class="muted">' + cards.length +
+    ' 张卡片 · ' + cards.filter((c) => isDue(c.key)).length + ' 项到期</span></header>';
+  const card = reviewCard;
+  if (!card) {
+    manualReview = false;
+    const result = cards.length ?
+      '<h3>这一轮没有待复习的卡片</h3><ul class="review-results">' +
+      cards.map((c,index) => {
+        const state = memoryFor(c.key);
+        const due = dueDates.get(c.key);
+        const next = due ? new Date(due).toLocaleDateString("zh-CN",{month:"numeric",day:"numeric"}) + " 再复习" : "";
+        return '<li><b class="hint-mark" lang="en"' + reviewTapeStyle(c.target) + '>' + esc(c.target.text) + '</b>' +
+          '<span class="review-status-text">' + memoryTag(state) + '<span class="muted">' + esc(next) + '</span>' +
+          '<button class="plain review-jump" data-review-jump="' + index + '" aria-label="回原文看 ' + esc(c.target.text) + '">回原文 ↗</button></span></li>';
+      }).join("") + '</ul>'
+      : '<h3>先从原文找一个想记的词</h3><p class="muted">双击单词贴上胶带，也可以划选短语，在右栏点「贴上标记」。</p>';
+    get("review-body").innerHTML = header + '<div class="review-card">'+result+
+      '<div class="review-tools"><button class="ghost" id="continue-reading">返回原文</button>' +
+      (cards.length ? '<button class="plain" id="review-all">再复习一轮</button>' : '') + '</div></div>';
+    get("continue-reading").onclick = () => showPage("read");
+    if (get("review-all")) get("review-all").onclick = () => {
+      manualReview = true;
+      reviewedThisRound.clear();
+      postponed.clear();
+      previouslyRetried.clear();
+      renderReview();
+    };
+    for (const button of get("review-body").querySelectorAll("[data-review-jump]")) {
+      button.onclick = () => openReviewSource(cards[Number(button.dataset.reviewJump)].target);
+    }
+    return;
+  }
+  const target = card.target, entry = target.entry;
+  const source = getMaterial(target.materialId);
+  const heading = '<h2 lang="en">'+esc(target.text)+'</h2>' +
+    (source ? '<p class="muted">' + esc(source.exam + " · " + source.info.label) + '</p>' : '');
+  const tools = '<div class="review-tools"><button class="ghost" id="show-hint" aria-expanded="'+hint+'">'+(hint?'收起原句':'看原句')+'</button>' +
+    '<button class="primary" id="reveal-answer"'+(answer?' hidden':'')+'>看答案</button>' +
+    (source ? '<button class="plain" id="review-source">回原文 ↗</button>' : '') + '</div>';
+  const original = hint ? '<p class="review-hint" lang="en">' + reviewSentence(target) + '</p>' : '';
+  const item = answer && !entry?.meaning ? dictionaryEntry(target) : null;
+  const response = answer ? '<div class="review-answer">' +
+    (entry?.meaning ? explanation("meaning","语境释义",'<p><b>' + esc(entry.meaning) + '</b></p>') :
+      explanation("meaning","常用义项",dictionarySenses(item)) + wordFormsPanel(item)) +
+    entryExtras(entry) +
+    '<div class="rating">'+Object.entries(schedule).map(([key,value])=>'<button class="ghost" data-rating="'+key+'" data-memory="'+key+'">'+value.label+'</button>').join("")+'</div></div>' : '';
+  get("review-body").innerHTML = header+'<div class="review-card">'+heading+tools+original+response+'</div>';
+  get("show-hint").onclick = () => { hint=!hint; renderReview(); get("show-hint").focus(); };
+  if (get("review-source")) get("review-source").onclick = () => openReviewSource(target);
+  get("reveal-answer").onclick = () => { answer=true; renderReview(); get("review-body").querySelector("[data-rating]").focus(); };
+  for (const b of get("review-body").querySelectorAll("[data-rating]")) b.onclick = () => {
+    const score = b.dataset.rating;
+    if (score === "again" && !previouslyRetried.has(card.key)) {
+      postponed.add(card.key);
+      previouslyRetried.add(card.key);
+      ratings.set(card.key,score);
+      dueDates.delete(card.key);
+    } else {
+      ratings.set(card.key,score);
+      dueDates.set(card.key,nextDue(schedule[score].days));
+      if (manualReview) reviewedThisRound.add(card.key);
+    }
+    markState();
+    saveReading();
+    if (activeLookup) renderLookup();
+    changeReviewCard(null); renderReview();
+    get("show-hint")?.focus();
+  };
+}
+const quizPairs = [
+  [["economist","经济学家"],["economics","经济学"]],
+  [["pension","养老金"],["passion","热情"]],
+  [["career","职业生涯"],["carrier","运送者；载体"]],
+  [["vary","有所不同"],["very","非常"]],
+  [["isolation","孤立；隔绝"],["insulation","隔热；绝缘"]],
+  [["occupation","职业"],["occasion","场合；时机"]],
+  [["physical","身体的；物理的"],["physician","医生"]],
+];
+const pairVisits = new Map(), matchMistakes = new Map();
+const matched = new Set();
+let matchRound = [], pickedMatch = null, wrongChoice = null;
+function shuffle(items) {
+  const copy = [...items];
+  for (let i = copy.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]] = [copy[j],copy[i]];
+  }
+  return copy;
+}
+function drawMatchLines(animateWord) {
+  const board = get("match-board").getBoundingClientRect();
+  const output = get("match-lines");
+  output.replaceChildren();
+  if (board.width === 0) return;
+  for (const word of matched) {
+    const from = get("match-words").querySelector('[data-match="' + word + '"]').getBoundingClientRect();
+    const to = get("match-meanings").querySelector('[data-match="' + word + '"]').getBoundingClientRect();
+    const dx = to.left-from.right, dy = (to.top+to.height/2)-(from.top+from.height/2);
+    const line = document.createElement("i");
+    const rotation = "rotate(" + Math.atan2(dy,dx) + "rad)";
+    line.className = "match-line";
+    Object.assign(line.style,{left:(from.right-board.left)+"px",
+      top:(from.top+from.height/2-board.top-1)+"px",width:Math.hypot(dx,dy)+"px",transform:rotation});
+    output.append(line);
+    if (word === animateWord) playEffect(line,[
+      {opacity:.5,transform:rotation+" scaleX(.10)"},{opacity:1,transform:rotation+" scaleX(1)"}
+    ],230);
+  }
+}
+function setMatchFeedback(text, retry = false) {
+  get("match-feedback").textContent = text;
+  get("match-feedback").dataset.result = retry ? "retry" : "ok";
+}
+function syncMatch(animateWord) {
+  for (const button of get("match-board").querySelectorAll(".match-option")) {
+    const id = button.dataset.match;
+    const complete = matched.has(id);
+    button.disabled = complete;
+    if (button.lang === "en") button.setAttribute("aria-pressed",String(!complete && pickedMatch === id));
+    button.querySelector(".match-check").textContent = complete ? "✓" : "";
+    if (button.parentElement.id === "match-meanings" && id === wrongChoice) button.dataset.miss = "true";
+    else delete button.dataset.miss;
+  }
+  get("match-progress").textContent = matched.size + " / " + matchRound.length + " 已配对";
+  drawMatchLines(animateWord);
+}
+function chooseMeaning(word) {
+  if (!pickedMatch) {
+    setMatchFeedback("先选左边的单词。",true);
+    return;
+  }
+  if (pickedMatch !== word) {
+    matchMistakes.set(pickedMatch,(matchMistakes.get(pickedMatch) || 0)+1);
+    wrongChoice = word;
+    setMatchFeedback("这两个没配上。再给 " + pickedMatch + " 选一个意思。",true);
+    syncMatch();
+    return;
+  }
+  matched.add(word);
+  wrongChoice = null;
+  pickedMatch = null;
+  const done = matched.size === matchRound.length;
+  setMatchFeedback(done ? "这一组全部配对了。" : "配对成功，选下一个词。");
+  syncMatch(word);
+  const nextWord = get("match-words").querySelector("button:enabled");
+  (nextWord || get("match-next")).focus({preventScroll:true});
+}
+function startMatchRound() {
+  const needsWork = new Set(groupCards(marks.values()).filter((card) => {
+    const state = memoryFor(card.key);
+    return state === "again" || state === "hinted";
+  }).map((card) => card.target.entry?.head));
+  const score = (pair) => pair.reduce((total,[word]) =>
+    total + (needsWork.has(word) ? 5 : 0) + Math.min(matchMistakes.get(word) || 0,3),0) -
+    (pairVisits.get(pair) || 0)*4;
+  const pairs = shuffle(quizPairs).sort((a,b) => score(b)-score(a)).slice(0,3);
+  for (const pair of pairs) pairVisits.set(pair,(pairVisits.get(pair) || 0)+1);
+  matchRound = shuffle(pairs.flat());
+  let meanings = shuffle(matchRound);
+  if (meanings.every((entry,index) => entry === matchRound[index])) meanings = [...meanings.slice(1),meanings[0]];
+  matched.clear();
+  pickedMatch = null;
+  wrongChoice = null;
+  const option = (id, label, isWord) => '<button type="button" class="match-option" data-match="' +
+    esc(id) + '"' + (isWord ? ' lang="en" aria-pressed="false"' : '') + '><span class="match-label">' +
+    esc(label) + '</span><span class="match-check" aria-hidden="true"></span></button>';
+  get("match-words").innerHTML = '<h2>单词</h2>' + matchRound.map(([word]) => option(word,word,true)).join("");
+  get("match-meanings").innerHTML = '<h2>意思</h2>' + meanings.map(([word,meaning]) => option(word,meaning,false)).join("");
+  for (const button of get("match-words").querySelectorAll("button")) button.onclick = () => {
+    pickedMatch = pickedMatch === button.dataset.match ? null : button.dataset.match;
+    wrongChoice = null;
+    setMatchFeedback(pickedMatch ? "给 " + pickedMatch + " 选一个意思。" : "");
+    syncMatch();
+  };
+  for (const button of get("match-meanings").querySelectorAll("button")) {
+    button.onclick = () => chooseMeaning(button.dataset.match);
+  }
+  setMatchFeedback("");
+  syncMatch();
+}
+get("match-next").onclick = () => {
+  startMatchRound();
+  get("match-words").querySelector("button")?.focus({preventScroll:true});
+};
+if (typeof ResizeObserver === "function") {
+  new ResizeObserver(() => drawMatchLines()).observe(get("match-board"));
+}
+
+let currentPage = "read", savedReadingScroll = 0;
+const pageIds = {read:"workspace",review:"review",match:"matching",library:"library"};
+function showPage(page) {
+  if (currentPage === page) return;
+  if (currentPage === "read") savedReadingScroll = get("reader").scrollTop;
+  currentPage = page;
+  for (const [kind,id] of Object.entries(pageIds)) {
+    get(id).hidden = kind !== page;
+    if (kind === page) get(kind+"-tab").setAttribute("aria-current","page");
+    else get(kind+"-tab").removeAttribute("aria-current");
+  }
+  closePeek(); selectParagraph(null);
+  window.scrollTo(0,0);
+  if (page === "review") {
+    markState();
+    renderReview();
+    smoothIn(get("review-body"),{distance:4,duration:220});
+  } else if (page === "match") {
+    if (!matchRound.length) startMatchRound();
+    else drawMatchLines();
+    smoothIn(get("matching").querySelector(".match-inner"),{distance:4,duration:220});
+  } else if (page === "library") {
+    renderLibrary();
+  } else {
+    get("reader").scrollTop = savedReadingScroll;
+    refreshTapes();
+  }
+}
+function openMaterial(id) {
+  if (material.id !== id) {
+    if (!renderMaterial(id)) return false;
+    savedReadingScroll = 0;
+    saveReading();
+  }
+  showPage("read");
+  return true;
+}
+
+const studyClock = createStudyClock();
+const idleDialog = get("idle-dialog");
+function renderClock({phase,visible,elapsed}) {
+  const seconds = Math.floor(elapsed/1000);
+  const pad = (value) => String(value).padStart(2,"0");
+  const hours = Math.floor(seconds/3600);
+  const time = (hours ? pad(hours)+":" : "") + pad(Math.floor(seconds/60)%60) + ":" + pad(seconds%60);
+  if (get("clock-time").textContent !== time) get("clock-time").textContent = time;
+  get("study-clock").dataset.clock = phase === "running" && visible ? "running" : phase === "idle" ? "idle" : "paused";
+  const label = {idle:"开始",paused:"继续",running:"暂停",confirm:"继续"}[phase];
+  if (get("clock-toggle").textContent !== label) get("clock-toggle").textContent = label;
+  if (phase === "confirm" && visible && !idleDialog.open) {
+    closePeek();
+    idleDialog.showModal();
+  } else if (phase !== "confirm" && idleDialog.open) {
+    idleDialog.close();
+  }
+}
+function syncStudyClock() {
+  renderClock(studyClock.update(Date.now(),!document.hidden));
+}
+function registerStudyActivity(event) {
+  if (idleDialog.contains(event.target)) return;
+  const studyArea = event.target.closest?.("#workspace,#review,#matching,#read-tab,#review-tab,#match-tab,#reading-anchor");
+  const state = studyClock.activity(Date.now(),!document.hidden,event.type !== "scroll" && Boolean(studyArea));
+  renderClock(state);
+  if (state.phase === "confirm" && event.cancelable && (event.type === "click" || event.type === "keydown")) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
+}
+function setClockRunning(running) {
+  renderClock(studyClock.setRunning(running,Date.now(),!document.hidden));
+}
+get("idle-continue").onclick = () => setClockRunning(true);
+get("idle-rest").onclick = () => setClockRunning(false);
+idleDialog.addEventListener("cancel",(event) => {
+  event.preventDefault();
+  setClockRunning(false);
+});
+get("clock-toggle").onclick = () => {
+  const state = studyClock.update(Date.now(),!document.hidden);
+  if (state.phase === "confirm") renderClock(state);
+  else setClockRunning(state.phase !== "running");
+};
+for (const event of ["click","keydown"]) document.addEventListener(event,registerStudyActivity,{capture:true});
+document.addEventListener("scroll",registerStudyActivity,{capture:true,passive:true});
+for (const event of ["wheel","touchmove"]) {
+  document.addEventListener(event,registerStudyActivity,{capture:true,passive:true});
+  get("reader").addEventListener(event,() => startCurrentPassage(),{passive:true});
+}
+document.addEventListener("visibilitychange",() => {
+  syncStudyClock();
+  if (!document.hidden && material) {
+    markState();
+    if (currentPage === "review") renderReview();
+  }
+});
+setInterval(syncStudyClock,300);
+for (const page of Object.keys(pageIds)) {
+  get(page+"-tab").onclick = () => showPage(page);
+}
+const library = get("library"), upload = get("paper-upload");
+get("paper-filter").oninput = renderLibrary;
+get("paper-list").onclick = (event) => {
+  const open = event.target.closest("[data-open]");
+  if (open) { openMaterial(open.dataset.open); return; }
+  const related = event.target.closest("[data-related]");
+  if (related) {
+    get("paper-filter").value = catalogue.get(related.dataset.related).title;
+    renderLibrary();
+  }
+};
+get("import-button").onclick = () => upload.click();
+upload.onchange = () => {
+  if (!get("import-button").disabled) void importPaper(upload.files[0]);
+  upload.value = "";
+};
+library.addEventListener("dragover",(event) => {
+  if (!event.dataTransfer.types.includes("Files")) return;
+  event.preventDefault();
+  library.classList.add("drop-ready");
+});
+library.addEventListener("dragleave",(event) => {
+  if (!library.contains(event.relatedTarget)) library.classList.remove("drop-ready");
+});
+library.addEventListener("drop",(event) => {
+  event.preventDefault();
+  library.classList.remove("drop-ready");
+  if (get("import-button").disabled || !event.dataTransfer.files.length) return;
+  if (event.dataTransfer.files.length === 1) void importPaper(event.dataTransfer.files[0]);
+  else {
+    get("import-status").textContent = "一次拖入一份试卷文件。";
+    get("import-status").dataset.outcome = "error";
+  }
+});
+
+const divider = get("divider");
+if (typeof ResizeObserver === "function") new ResizeObserver(() => refreshTapes()).observe(get("passage"));
+function setAside(width) {
+  const w = get("workspace").clientWidth;
+  const px = Math.max(240,Math.min(Math.min(520,Math.round(w*.54)),width));
+  get("workspace").style.setProperty("--aside",px+"px");
+  divider.setAttribute("aria-valuenow",String(px));
+  divider.setAttribute("aria-valuetext","详解栏宽 "+px+" 像素");
+}
+divider.onpointerdown = (e) => { if(e.button===0) divider.setPointerCapture(e.pointerId); };
+divider.onpointermove = (e) => {
+  if (divider.hasPointerCapture(e.pointerId)) setAside(get("workspace").getBoundingClientRect().right-e.clientX-6);
+};
+divider.onkeydown = (e) => {
+  if (!["ArrowLeft","ArrowRight"].includes(e.key)) return;
+  e.preventDefault(); setAside(get("inspector").offsetWidth+(e.key==="ArrowLeft"?14:-14));
+};
+renderMaterial(saved.last || sampleId) || renderMaterial(sampleId);
+refreshAnchorButton();
+</script>
+<script src="install-web.js"></script>
+</html>
