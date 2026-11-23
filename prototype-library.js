@@ -5,9 +5,12 @@ const sectionInfo = {
   b: { label: "长篇匹配", title: "Section B", first: 36, last: 45 },
   c1: { label: "仔细阅读 · 第一篇", title: "Passage One", first: 46, last: 50 },
   c2: { label: "仔细阅读 · 第二篇", title: "Passage Two", first: 51, last: 55 },
+  reading: { label: "文章精读", title: "Reading" },
 };
 const sampleId = "cet4_2099_01_1:c1";
 const paperIdPattern = /^cet4_(20\d{2})_(0[1-9]|1[0-2])_([1-3])$/;
+const catalogueIdPattern = /^cet4_(20\d{2})_(0[1-9]|1[0-2])_([1-3])(?:-([1-3]))?$/;
+const articleIdPattern = /^article_[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
 const builtinPapers = new Map(BUILTIN_PAPERS.map((paper) => [paper.id, paper]));
 const importStorage = "judu-reader.imported-papers.v1";
 const readingStorage = "judu-reader.reading.v1";
@@ -22,7 +25,22 @@ function readLocal(key, fallback) {
   }
 }
 
-function decodePaperPack(raw) {
+function decodeContextEntry(entry) {
+  if (!entry || typeof entry.head !== "string" || typeof entry.meaning !== "string") return null;
+  return Object.fromEntries(["head","meaning","pos","use","confusion","morph","ipa","sense"]
+    .filter((key) => typeof entry[key] === "string" && entry[key].length <= 10000)
+    .map((key) => [key,entry[key]]));
+}
+
+function decodeContextMap(entries) {
+  if (!entries || typeof entries !== "object" || Array.isArray(entries)) return {};
+  return Object.fromEntries(Object.entries(entries).flatMap(([key,entry]) => {
+    const item = decodeContextEntry(entry);
+    return item ? [[key,item]] : [];
+  }));
+}
+
+function decodePaperPack(raw, libraryPack = false) {
   const fail = (path, message) => { throw new Error(path + " " + message); };
   const object = (value, path) => {
     if (!value || typeof value !== "object" || Array.isArray(value)) fail(path, "应为对象。");
@@ -44,18 +62,22 @@ function decodePaperPack(raw) {
   if (raw.format !== "judu-cet4" || raw.version !== 1) fail("文件", "需要 judu-cet4 格式第 1 版。");
   const paper = object(raw.paper,"paper");
   const id = string(paper.id,"paper.id");
-  const identity = id.match(paperIdPattern);
-  if (!identity) fail("paper.id", "用 cet4_年份_月份_套别，例如 cet4_2026_12_1。");
-  const [,year,month,set] = identity;
-  const title = year + "年" + Number(month) + "月 · 第" + "一二三"[Number(set) - 1] + "套";
+  const identity = id.match(libraryPack ? catalogueIdPattern : paperIdPattern);
+  if (id.length > 90 || (!identity && !articleIdPattern.test(id))) {
+    fail("paper.id", "四级真题用 cet4_2026_12_1 这样的编号，自选文章用 article_example。");
+  }
+  const title = identity && !(libraryPack && paper.title)
+    ? identity[1] + "年" + Number(identity[2]) + "月 · 第" + "一二三"[Number(identity[3]) - 1] + "套"
+    : string(paper.title,"paper.title");
   const sourceNote = string(paper.sourceNote,"paper.sourceNote",true);
   const sections = {};
   for (const row of list(raw.sections,"sections",4)) {
     object(row,"篇章");
     const key = row.type;
     if (typeof key !== "string" || !Object.hasOwn(sectionInfo,key) || Object.hasOwn(sections,key)) {
-      fail("sections", "type 应为 a、b、c1、c2，且不能重复。");
+      fail("sections", "type 应为 a、b、c1、c2 或 reading，且不能重复。");
     }
+    if (Boolean(identity) === (key === "reading")) fail("sections","自选文章用 reading，四级真题用 a、b、c1 或 c2。");
     const path = sectionInfo[key].label;
     let paragraph = 0;
     const paragraphLabels = new Map();
@@ -87,7 +109,8 @@ function decodePaperPack(raw) {
       });
       return {id:s.id,paragraph,paragraphLabel,en,displayEn,chunks,phrases,
         literal:string(s.literal,tag + " literal",true),zh:string(s.zh,tag + " zh",true),
-        grammar:string(s.grammar,tag + " grammar",true),trap:string(s.trap,tag + " trap",true),
+        grammar:string(s.grammar,tag + " grammar",true),gist:string(s.gist,tag + " gist",true),
+        trap:string(s.trap,tag + " trap",true),
         steps:list(s.steps,tag + " steps",20,true).map((step) => string(step,tag + " step"))};
     });
     if (!sentences.length) fail(path,"原文不能为空。");
@@ -103,7 +126,7 @@ function decodePaperPack(raw) {
         fail(path,"须保留 ___26___ 到 ___35___ 及 A–O 共 15 个选项。");
       }
     }
-    const questions = list(row.questions,path + " questions",10).map((q,index) => {
+    const questions = list(row.questions,path + " questions",key === "reading" ? 0 : 10,key === "reading").map((q,index) => {
       const number = first + index;
       const tag = path + " 第 " + number + " 题";
       object(q,tag);
@@ -125,7 +148,7 @@ function decodePaperPack(raw) {
       return {id:q.id,prompt:key === "a" ? "Blank " + number : string(q.prompt,tag + " prompt"),
         options,answer,evidence,explanation:string(q.explanation,tag + " explanation",true)};
     });
-    if (questions.length !== last - first + 1) fail(path,"题号必须完整覆盖 " + first + "–" + last + "。");
+    if (key !== "reading" && questions.length !== last - first + 1) fail(path,"题号必须完整覆盖 " + first + "–" + last + "。");
     const glossary = list(row.dictionary,path + " dictionary",200,true).map((value,index) => {
       const tag = path + " 第 " + (index + 1) + " 个词条";
       const term = object(value,tag);
@@ -140,22 +163,37 @@ function decodePaperPack(raw) {
         forms:list(term.forms,tag + " forms",20,true).map((form) => string(form,tag + " 词形"))};
     });
     sections[key] = {
-      englishTitle:string(row.englishTitle,path + " englishTitle",true),
+      englishTitle:string(row.englishTitle,path + " englishTitle",true),title:string(row.title,path + " title",true),
       sentences,questions,wordBank,glossary,
-      sourceOnly:!sentences.some((s) => s.literal || s.zh || s.grammar || s.steps.length || s.chunks.length || s.phrases.length),
+      sourceOnly:!sentences.some((s) => s.literal || s.zh || s.grammar || s.gist || s.steps.length || s.chunks.length || s.phrases.length),
     };
+    if (libraryPack) {
+      for (const name of ["phrases","words"]) {
+        if (row[name]) sections[key][name] = decodeContextMap(row[name]);
+      }
+      for (const name of ["overrides","occurrenceOverrides"]) {
+        if (row[name]) sections[key][name] = Object.fromEntries(sentences
+          .filter(({id}) => Object.hasOwn(row[name],id))
+          .map(({id}) => [id,decodeContextMap(row[name][id])]));
+      }
+    }
   }
-  if (!Object.keys(sections).length) fail("sections","至少需有一个篇章。");
+  if (!Object.keys(sections).length && !libraryPack) fail("sections","至少需有一个篇章。");
   const verificationNotes = list(raw.verificationNotes,"verificationNotes",30,true)
     .map((note) => string(note,"verificationNotes"));
-  return {id,title,sourceNote,verificationNotes,sections};
+  const extra = libraryPack ? {
+    related:list(paper.related,"paper.related",4,true).filter((id) => typeof id === "string" && catalogueIdPattern.test(id)),
+    sharedNote:string(paper.sharedNote,"paper.sharedNote",true),
+  } : {};
+  return {id,title,sourceNote,verificationNotes,sections,...extra};
 }
 
 function paperCatalogue() {
   const papers = new Map(builtinPapers);
-  for (const paper of readLocal(importStorage,[])) {
+  for (const paper of [...readLocal(importStorage,[]),...storedPapers.values()]) {
     const base = builtinPapers.get(paper.id);
-    papers.set(paper.id,{...base,...paper,sections:{...base?.sections,...paper.sections}});
+    const existing = papers.get(paper.id);
+    papers.set(paper.id,{...base,...existing,...paper,sections:{...existing?.sections,...paper.sections}});
   }
   return papers;
 }
@@ -177,13 +215,17 @@ function importedDictionary(material) {
   return entries;
 }
 
+function readingSnapshot() {
+  return {
+    last:material.id, marks:[...marks], ratings:[...ratings], dueDates:[...dueDates],
+    finished:[...finished], choices:[...choices],
+    startedPassages:[...startedPassages], closeReadPassages:[...closeReadPassages],
+  };
+}
+
 function saveReading() {
   try {
-    localStorage.setItem(readingStorage,JSON.stringify({
-      last:material.id, marks:[...marks], ratings:[...ratings], dueDates:[...dueDates],
-      finished:[...finished], choices:[...choices],
-      startedPassages:[...startedPassages], closeReadPassages:[...closeReadPassages],
-    }));
+    localStorage.setItem(readingStorage,JSON.stringify(readingSnapshot()));
   } catch {
     flash("浏览器暂时无法保存学习记录，这次的改动只在当前窗口有效。");
   }
@@ -212,63 +254,12 @@ function renderLibrary() {
         '<small class="progress-tag" data-progress="' + progress + '">' + progressLabels[progress] +
         (item.sourceOnly ? " · 仅原题" : "") + '</small></button>'] : [];
     }).join("");
-    const original = paper.pdf ? '<a class="pdf-link" target="_blank" rel="noopener" href="./archive/' +
-      encodeURIComponent(paper.pdf) + '">整卷 PDF ↗</a>' : '';
-    const related = paper.related?.map((id) => '<button type="button" class="ghost" data-related="' + id + '">' +
+    const original = paper.pdf ? '<a class="pdf-link" target="_blank" rel="noopener" href="' +
+      esc(paperPdfHref(paper)) + '">整卷 PDF ↗</a>' : '';
+    const related = paper.related?.filter((id) => catalogue.has(id)).map((id) => '<button type="button" class="ghost" data-related="' + id + '">' +
       esc(catalogue.get(id).title) + '</button>').join("") || "";
     return '<article class="paper-item"><header><h2>' + esc(paper.title) + '</h2>' + original +
       '</header>' + (paper.sharedNote ? '<p class="muted">' + esc(paper.sharedNote) + '</p>' : '') +
       '<div class="paper-sections">' + options + related + '</div></article>';
   }).join("") || '<p class="muted">没有找到符合条件的试卷。</p>';
-}
-
-async function importPaper(file) {
-  if (!file) return;
-  const status = get("import-status");
-  get("import-button").disabled = true;
-  try {
-    if (!/\.json$/i.test(file.name) || file.size > maximumFileSize) {
-      throw new Error("请选择 1 MB 以内的 JSON 文件。");
-    }
-    let raw;
-    try {
-      raw = JSON.parse(await file.text());
-    } catch {
-      throw new Error("读取不了 JSON。请导入网页端生成的文件。");
-    }
-    const paper = decodePaperPack(raw);
-    const current = catalogue.get(paper.id);
-    const additions = Object.entries(paper.sections).filter(([key,section]) =>
-      !current?.sections[key] || (current.sections[key].sourceOnly && !section.sourceOnly));
-    if (!additions.length) {
-      status.textContent = paper.title + " 的这些篇章已在试卷库里。";
-      status.dataset.outcome = "info";
-      return;
-    }
-    const imports = new Map(readLocal(importStorage,[]).map((item) => [item.id,item]));
-    const previous = imports.get(paper.id);
-    const sections = {...previous?.sections};
-    for (const [key,section] of additions) {
-      sections[key] = {...section,sourceNote:paper.sourceNote,verificationNotes:paper.verificationNotes};
-    }
-    imports.set(paper.id,{id:paper.id,title:paper.title,sections});
-    try {
-      localStorage.setItem(importStorage,JSON.stringify([...imports.values()]));
-    } catch {
-      throw new Error("浏览器无法保存这份文件。请确认允许本地存储并有足够空间。");
-    }
-    catalogue = paperCatalogue();
-    get("paper-filter").value = paper.title;
-    renderLibrary();
-    const skipped = Object.keys(paper.sections).length - additions.length;
-    const notes = paper.verificationNotes.length ? " 有 " + paper.verificationNotes.length + " 条待核对项，打开篇章可查看。" : "";
-    status.textContent = "已导入 " + paper.title + " 的 " + additions.length + " 篇阅读。" +
-      (skipped ? " 已有的 " + skipped + " 篇沿用原版。" : "") + notes;
-    status.dataset.outcome = "success";
-  } catch (error) {
-    status.textContent = error.message;
-    status.dataset.outcome = "error";
-  } finally {
-    get("import-button").disabled = false;
-  }
 }

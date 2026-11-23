@@ -4,7 +4,7 @@
 
 ## 使用
 
-- **网页版** [打开句读](https://lilinmadoka.github.io/judu-reader/)。电脑和平板使用同一个网址。iPad 可以用 Safari 打开并添加到主屏幕。首次完整加载后，浏览器支持时可从缓存离线阅读。
+- **网页版** [打开句读](https://lilinmadoka.github.io/judu-reader/)。iPad 可以用 Safari 添加到主屏幕，Windows 可以用 Edge 作为应用安装。首次完整缓存后可离线阅读。联网时应用会检查更新，下载好后由你选择什么时候切换。
 - **电脑离线版** 在 [GitHub Releases](https://github.com/lilinmadoka/judu-reader/releases/latest) 下载 ZIP，完整解压后用浏览器打开 `打开句读.html`。
 - **在本机运行源码** 用 Python 3 在仓库根目录启动本地服务，然后用浏览器访问 `http://127.0.0.1:8768/`。
 
@@ -21,15 +21,18 @@ python3 -m http.server 8768 --bind 127.0.0.1
 
 ## 导入和保存
 
-试卷库中有一篇原创示例。通过「导入 JSON」添加你有权使用的材料。每份文件对应一套试卷，可含选词填空、长篇匹配和两篇仔细阅读。格式见 [导入说明](导入说明.md) 和 [示例文件](示例导入.json)。
+试卷库中有一篇原创示例。点「复制导入提示词」，把提示词和照片、PDF 或讲义一起发给能处理附件的对话工具。下载 JSON 后从「导入 JSON」加入。可导入纯文章、四级题目或含多篇阅读的整库文件。格式见 [导入说明](导入说明.md) 和 [示例文件](示例导入.json)。
 
-导入内容、生词、作答和进度由当前浏览器保存，各设备单独记录。直接打开离线 HTML 时，保留同一文件路径，并使用同一浏览器以继续原来的学习记录。
+导入内容、生词、作答和进度由当前浏览器保存，各设备单独记录。通过「试卷库 → 备份和导入帮助」可以导入和导出学习记录。另存原始资料文件便于恢复。直接打开离线 HTML 时，保留同一文件路径，并使用同一浏览器读取原来的学习记录。
 
 ## 构建电脑离线版
 
 ```sh
 python3 tools/build_offline.py /tmp/judu-reader-offline.zip
+python3 tools/build_offline.py --ipad /tmp/judu-reader-ipad.zip
 ```
+
+发布网页版前执行 `python3 tools/stamp_web.py`，使离线缓存跟随本次发布的文件更新。
 
 ## 许可
 

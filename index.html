@@ -166,6 +166,14 @@
 .import-status {margin:0 0 10px;color:var(--green);font-size:13px;overflow-wrap:anywhere}
 .import-status:empty {display:none}
 .import-status[data-outcome="error"] {color:var(--coral-ink)}
+.transfer-tools {margin-bottom:12px;font-size:13px;color:var(--muted)}
+.transfer-tools summary {width:fit-content;cursor:pointer}
+.transfer-tools .library-actions {margin-top:8px;justify-content:flex-start}
+.prompt-dialog {width:min(660px,calc(100vw - 34px))}
+.prompt-dialog textarea {display:block;width:100%;height:min(50vh,390px);margin-bottom:12px;padding:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:13px}
+.update-panel {position:fixed;right:var(--float-inset,14px);top:var(--float-inset,14px);z-index:20;
+  padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--paper);box-shadow:var(--shadow);font-size:13px}
+.update-panel .ghost {margin-left:5px}
 .library.drop-ready .paper-filter {outline:2px dashed var(--green);outline-offset:3px}
 .paper-item {padding:14px 0;border-bottom:1px solid var(--line)}
 .paper-item h2 {font-size:16px;margin:0}
@@ -304,16 +312,25 @@
       <div id="inspect-content"><p class="muted">点正文中的单词查看用法。想拆一句时，点段落右侧的「选句」。</p></div>
     </aside>
   </div>
-  <section class="library" id="library" aria-label="试卷库" hidden>
+  <section class="library" id="library" aria-label="试卷库" data-archive="./archive/" hidden>
     <div class="library-inner">
       <header class="library-head">
         <div><h1>试卷库</h1><span class="muted" id="library-summary"></span><p class="library-progress" id="library-progress"></p></div>
         <div class="library-actions">
-          <a href="./导入说明.md" target="_blank" rel="noopener">导入说明</a>
+          <button type="button" class="ghost" id="copy-import-prompt">复制导入提示词</button>
           <button type="button" class="primary" id="import-button">导入 JSON</button>
           <input type="file" id="paper-upload" accept=".json,application/json" hidden>
         </div>
       </header>
+      <details class="transfer-tools">
+        <summary>备份和导入帮助</summary>
+        <div class="library-actions">
+          <button type="button" class="ghost" id="export-backup">导出学习记录</button>
+          <button type="button" class="ghost" id="import-backup">导入备份</button>
+          <input type="file" id="backup-upload" accept=".json,application/json" hidden>
+          <a href="./导入说明.md" target="_blank" rel="noopener">导入说明</a>
+        </div>
+      </details>
       <input class="paper-filter" type="search" id="paper-filter" aria-label="筛选真题" placeholder="按年份、套别或篇名筛选">
       <p class="import-status" id="import-status" role="status"></p>
       <div id="paper-list"></div>
@@ -346,6 +363,19 @@
     <button class="primary" id="idle-continue" type="button" autofocus>继续学习</button>
   </div>
 </dialog>
+<dialog class="idle-dialog prompt-dialog" id="prompt-dialog" aria-labelledby="prompt-title">
+  <h2 id="prompt-title">导入提示词</h2>
+  <p>复制下方文字，和照片、PDF 或讲义一起发给网页端 GPT。</p>
+  <textarea id="prompt-text" readonly aria-label="导入提示词"></textarea>
+  <form method="dialog" class="dialog-actions">
+    <button type="submit" class="ghost">关闭</button>
+  </form>
+</dialog>
+<aside id="web-update" class="update-panel" aria-label="应用更新" hidden>
+  <span role="status">新版已下载</span>
+  <button type="button" class="ghost" id="apply-web-update">现在更新</button>
+  <button type="button" class="plain" id="dismiss-web-update">稍后</button>
+</aside>
 <div id="peek" class="tooltip" role="status" hidden></div>
 <div id="toast" class="toast" role="status" hidden></div>
 <script type="application/json" id="material">
@@ -356,6 +386,7 @@
 </script>
 <script src="prototype-library-data.js"></script>
 <script src="prototype-library.js"></script>
+<script src="prototype-transfer.js"></script>
 <script src="prototype-dictionary-data.js"></script>
 <script src="prototype-word-family.js"></script>
 <script src="prototype-dictionary.js"></script>
@@ -460,8 +491,9 @@ function renderMaterial(id) {
     item.phrases.sort((a,b) => (b.end-b.start)-(a.end-a.start));
   }
   const {label,title,first,last} = material.info;
-  get("paper-meta").textContent = material.exam + " · " + label + " · " + first + "–" + last;
-  get("paper-title").textContent = material.englishTitle || title;
+  get("paper-meta").textContent = first ? material.exam + " · " + label + " · " + first + "–" + last : label;
+  get("paper-title").textContent = material.englishTitle || (material.key === "reading" ? material.exam : title);
+  get("go-questions").hidden = !material.questions.length;
   get("passage").innerHTML = '<div class="tape-layer" aria-hidden="true"></div>' +
     [...byParagraph].map(([number,sentences]) => renderParagraph(number,sentences)).join("");
   drawTapeLayer = createTapeLayer(get("passage").firstElementChild);
@@ -529,7 +561,8 @@ function renderQuestions() {
   const bank = material.wordBank?.length ? '<div class="word-bank" lang="en">' + material.wordBank.map(({letter,word}) =>
     '<span>' + esc(letter) + ') ' + esc(word) + '</span>').join("") + '</div>' : "";
   const answered = choices.get(material.id) || {};
-  get("questions").innerHTML = '<h2>Questions ' + first + '–' + last + '</h2>' + bank + material.questions.map((q) => {
+  const heading = material.questions.length ? '<h2>Questions ' + first + '–' + last + '</h2>' : "";
+  get("questions").innerHTML = heading + bank + material.questions.map((q) => {
     const pick = answered[q.id];
     let options;
     if (material.key === "c1" || material.key === "c2") {
@@ -1098,10 +1131,12 @@ function finishPassage() {
 }
 function updateCompleted() {
   const buttons = [...get("passage").querySelectorAll("[data-translate]")];
-  get("finish-below").textContent = completed ? "已做完 · 回到文章" : "本篇做完";
+  const hasQuestions = Boolean(material.questions.length);
+  get("finish-below").textContent = completed ? "已读完 · 回到文章" : hasQuestions ? "本篇做完" : "本篇读完";
+  const available = [buttons.length && "段落译文",hasQuestions && "参考答案"].filter(Boolean).join("和");
   get("finish-note").textContent = completed ?
-    (buttons.length ? "段落译文和参考答案已开放" : "已开放参考答案") :
-    (buttons.length ? "做完后可以查看段落译文和参考答案" : "做完后可以查看参考答案");
+    (available ? "已开放" + available : "") :
+    (available ? "读完后可以查看" + available : "");
   buttons.forEach((b) => { b.hidden = !completed; });
   get("questions").querySelectorAll("[data-answer]").forEach((p) => { p.hidden = !completed; });
 }
@@ -1479,6 +1514,25 @@ get("paper-list").onclick = (event) => {
   }
 };
 get("import-button").onclick = () => upload.click();
+get("copy-import-prompt").onclick = () => void copyImportPrompt();
+get("export-backup").onclick = downloadBackup;
+const backupUpload = get("backup-upload");
+get("import-backup").onclick = () => backupUpload.click();
+backupUpload.onchange = async () => {
+  const file = backupUpload.files[0];
+  backupUpload.value = "";
+  if (!file) return;
+  const button = get("import-backup");
+  button.disabled = true;
+  try {
+    restoreReadingBackup(await readTransferFile(file,8 * 1024 * 1024));
+    importStatus("已合并学习记录。本机已有的同一题作答和复习状态优先。");
+  } catch (error) {
+    importStatus(error.message,"error");
+  } finally {
+    button.disabled = false;
+  }
+};
 upload.onchange = () => {
   if (!get("import-button").disabled) void importPaper(upload.files[0]);
   upload.value = "";
@@ -1519,8 +1573,17 @@ divider.onkeydown = (e) => {
   if (!["ArrowLeft","ArrowRight"].includes(e.key)) return;
   e.preventDefault(); setAside(get("inspector").offsetWidth+(e.key==="ArrowLeft"?14:-14));
 };
+const restoreLastPassage = saved.last && !getMaterial(saved.last);
 renderMaterial(saved.last || sampleId) || renderMaterial(sampleId);
 refreshAnchorButton();
+void loadStoredPapers().then(() => {
+  catalogue = paperCatalogue();
+  if (restoreLastPassage && currentPage === "read" && material.id === sampleId && getMaterial(saved.last)) {
+    renderMaterial(saved.last);
+  }
+  if (currentPage === "library") renderLibrary();
+  refreshAnchorButton();
+}).catch(() => importStatus("暂时无法读取设备里的资料库。","error"));
 </script>
 <script src="install-web.js"></script>
 </html>
