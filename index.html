@@ -17,18 +17,18 @@
 *{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--outer);font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}button,input{font:inherit}a{color:var(--green)}button{cursor:pointer;color:inherit}button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:3px}button:disabled{cursor:default}button[hidden],[hidden]{display:none!important}button{min-height:30px}h1,h2,h3,p{margin-top:0}h2{line-height:1.35}em{font-style:normal}::selection{background:#c1e8db}
 .muted{color:var(--muted);font-size:12px}
 .tab,.plain,.primary,.ghost{border:1px solid transparent;border-radius:6px;background:transparent;padding:5px 10px}.tab{color:var(--muted)}.tab[aria-current="page"]{background:var(--pale);color:var(--green);font-weight:600}.plain:hover,.ghost:hover{background:var(--pale)}.primary{background:var(--green);color:#fff;border-color:var(--green)}.primary:hover{background:var(--green-deep);border-color:var(--green-deep)}.ghost{border-color:var(--line);color:var(--green);background:var(--paper)}.count{margin-left:3px}
-.workspace{display:grid;grid-template-columns:minmax(0,1fr) 12px var(--aside,340px);height:100dvh;overflow:hidden}
+.workspace{--gutter:14px;display:grid;grid-template-columns:minmax(0,1fr) var(--gutter) var(--aside,340px);height:100dvh;overflow:hidden}
 .reader,.inspector{overflow:auto;min-width:0;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}.reader{background:var(--paper);scroll-padding-top:18px}
 .paper{max-width:790px;margin:auto;padding:26px clamp(34px,6vw,84px) 36px clamp(23px,4vw,54px)}.paper-head{border-bottom:1px solid var(--line);margin-bottom:20px;padding-bottom:14px}.meta{color:var(--muted);font-size:12px;margin:0 0 7px}.paper-title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}.paper-title-row button{font-size:12px;color:var(--green);flex:none}.paper h1{font:700 clamp(25px,3vw,37px)/1.05 var(--serif);letter-spacing:-.015em;margin:0 0 8px}.help{color:var(--muted);font-size:12px;margin:0}.help summary{cursor:pointer;width:fit-content}.help p{margin:7px 0 0}
 .paragraph{position:relative;margin:0 0 21px}.paragraph .english{font:18px/1.87 var(--serif);overflow-wrap:break-word;margin:0}.para-actions{position:absolute;left:calc(100% + 9px);top:2px;display:flex;flex-direction:column;gap:2px;align-items:flex-start}.para-actions button{min-height:24px;border:1px solid transparent;background:transparent;color:var(--green);white-space:nowrap;font-size:11px;border-radius:5px;padding:2px 5px}.para-actions button:hover,.para-actions button[aria-pressed="true"],.para-actions button[aria-expanded="true"]{background:var(--pale);border-color:var(--line)}
 .word{cursor:help;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}.word:hover,.word.current{background:var(--pale)}.word.marked{background:transparent}
 #passage{position:relative;isolation:isolate}
 #passage .paragraph{z-index:1}
-.tape-layer,.tape-print,.tape-shadow,.tape-cut,.tape-face,.tape-fold{position:absolute;pointer-events:none}
+.tape-layer,.tape-print,.tape-shadow,.tape-face,.tape-lift,.tape-cast{position:absolute;pointer-events:none}
 .tape-layer{inset:0}
 .tape-placement{position:absolute}
-.tape-print,.tape-shadow,.tape-cut{inset:0}
-.tape-cut,.tape-face,.tape-shadow::before{clip-path:var(--tape-outline)}
+.tape-print,.tape-shadow{inset:0}
+.tape-face,.tape-shadow::before{clip-path:var(--tape-outline)}
 .tape-shadow{transform:translateY(1.30px);filter:blur(.70px);
   mask-image:linear-gradient(to bottom,transparent 72%,#000 99%);opacity:.43}
 .tape-shadow::before{content:"";position:absolute;inset:0;background:#745338}
@@ -37,23 +37,40 @@
     linear-gradient(174deg,#fff5e164,transparent 42%,transparent 72%,#9257373b);
   background-position:var(--tape-grain-position,0 0),center,center;
   background-size:80px 24px,100% 100%,100% 100%;background-repeat:repeat,no-repeat,no-repeat}
-.tape-fold{left:0;top:-1px;bottom:-1px;width:clamp(4px,14%,10px);opacity:0;
-  background:linear-gradient(90deg,transparent,#6d543c45 24%,#d3be9ba9 46%,#fffaf1ed 64%,#fffdf5ae 81%,transparent)}
+.tape-lift,.tape-cast{left:0;top:0;bottom:0;width:26px;opacity:0;transform-origin:0 50%}
+.tape-lift{
+  clip-path:polygon(0 0,89% 2%,94% 0,99% 23%,93% 43%,100% 66%,92% 97%,0 100%);
+  background-color:var(--tape-tint);
+  background-image:linear-gradient(90deg,#57412f65 0%,transparent 19%,#fffbedb3 63%,#fff8df 93%),var(--tape-grain,none);
+  background-size:100% 100%,80px 24px;
+}
+.tape-cast{background:radial-gradient(ellipse at 37% 53%,#4f3529a8,transparent 72%);filter:blur(2px)}
 .hint-mark{color:inherit;background:var(--tape-color,#e8dec7);background:color-mix(in srgb,var(--tape-color,#e8dec7) 72%,var(--paper));padding-inline:.12em;
   box-decoration-break:clone;-webkit-box-decoration-break:clone}
-.picking .sentence{background:#d4efe5a6;border-radius:2px;cursor:pointer;box-decoration-break:clone;-webkit-box-decoration-break:clone}
-.picking .sentence:hover,.picking .sentence:focus-visible{background:#b2e2d2c9;box-shadow:0 0 0 1px var(--green),inset 0 -2px 0 var(--green)}
-.picking .sentence:focus-visible{outline:2px solid var(--green-deep);outline-offset:3px}
+.paragraph .sentence{border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.sentence[data-inspected]{background:#e5ebf35e;box-shadow:inset 0 -1px 0 #7d94b4a8}
+.sentence .word[data-chunk-highlight]{background:#cbd9f0b5;box-shadow:inset 0 -2px #476282}
+::highlight(judu-chunk){background:#cbd9f0;color:#243e61;text-decoration:underline #476282}
+.picking .sentence{background:#dbe8f1a6;box-shadow:inset 0 -1px #8ba7bf;cursor:pointer}
+.picking .sentence:is(:hover,:focus-visible,:active){background:#bed4e9;box-shadow:inset 0 -2px #334f72,0 0 0 1px #5b7b9d}
+.picking .sentence:focus-visible{outline:2px solid #334f72;outline-offset:3px}
 .picking .sentence .word{cursor:inherit;background:transparent}
-.para-actions [data-pick][aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.para-actions [data-pick][aria-pressed="true"]{background:#345576;border-color:#345576;color:#fff}
+.para-actions [data-pick][data-has-note]{color:#365675;border-color:#aab9ca}
+.reader:not(:has(.picking)) .word.current{box-shadow:inset 0 -2px var(--focus)}
+.reader:not(:has(.picking)) .word:active{background:#b6d9cb;transition:none}
 .paragraph-translation{margin:9px 0 0;padding:9px 0 8px 13px;border-left:2px solid var(--accent-line);color:var(--ink-soft);font-size:14px;line-height:1.75}.paragraph-translation p{margin:5px 0 0}.caption{display:block;font-size:11px;color:var(--muted);font-weight:600}
 .finish{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0 8px;border-top:1px solid var(--line)}.finish .muted{margin:0}.questions{scroll-margin-top:14px;padding-top:14px;margin-top:13px;border-top:1px solid var(--line)}.questions h2{font:700 23px var(--serif);margin:0 0 10px}.question{border:0;padding:0;margin:0 0 17px;min-width:0}.question legend{font:700 16px/1.5 var(--serif);margin:0 0 4px}.question label{display:flex;align-items:baseline;gap:7px;padding:4px 0;cursor:pointer;font:16px/1.45 var(--serif)}.question input{accent-color:var(--green);margin:0;flex:none}.reference{color:var(--green);font-size:12px}.source{padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
-.divider{cursor:col-resize;touch-action:none;background:linear-gradient(to right,var(--paper) 5px,var(--line) 5px,var(--line) 6px,var(--side) 6px);position:relative}.divider:after{content:"";position:absolute;left:4px;top:47%;width:4px;height:34px;background:var(--line-strong);border-radius:3px}.divider:hover:after,.divider:focus-visible:after{background:var(--green)}
+.divider{cursor:col-resize;touch-action:none;background:linear-gradient(to right,var(--paper) calc(50% - 1px),var(--line) calc(50% - 1px) 50%,var(--side) 50%);position:relative;z-index:1}
+.divider:after{content:"";position:absolute;left:50%;top:47%;width:3px;height:32px;transform:translateX(-50%);background:var(--line-strong);border-radius:4px}
+.divider:is(:hover,:focus-visible,[data-dragging]):after{background:var(--green);width:5px}
+.divider[data-dragging]{background:linear-gradient(90deg,var(--paper),var(--pale),var(--side))}
+.workspace:has(.divider[data-dragging]){cursor:col-resize;user-select:none}
 .inspector{background:var(--side);padding:18px clamp(14px,2.4vw,24px) 28px}.inspect-title{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:9px;border-bottom:1px solid var(--line);margin-bottom:15px;color:var(--green);font-weight:650;font-size:13px}.inspect-title small{font-size:11px;color:var(--muted);font-weight:400}.inspector h2{font:700 25px/1.22 var(--serif);overflow-wrap:anywhere;margin:0 0 5px}.inspector .sentence-title{font-size:19px;line-height:1.55}.inspector .definition{font-weight:600;color:var(--green);font-size:15px;margin:3px 0 9px}.inspector .muted{margin:0 0 10px}.inspector h3{margin:0 0 4px;font-size:12px;color:var(--green)}.inspector section{margin:13px 0 0;padding-top:10px;border-top:1px solid var(--line)}.inspector section p{font-size:13px;margin:0 0 5px}.inspect-actions{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0;font-size:12px}.inspector .compare{font-size:13px;padding-left:9px;border-left:2px solid var(--line-strong)}.compare b{font-family:var(--serif);letter-spacing:.015em}.analysis-block ol,.analysis-block ul{margin:0;padding-left:20px;font-size:12px}.analysis-block li{margin:3px 0}.analysis-block dt{font:14px/1.4 var(--serif);margin-top:6px}.analysis-block dd{margin:0 0 4px;color:var(--muted);font-size:12px}.analysis-block dl{margin:0}
 .tooltip{position:fixed;z-index:8;background:var(--tip);color:#f3f8f6;pointer-events:none;padding:7px 11px;max-width:min(340px,calc(100vw - 16px));min-width:120px;border-radius:7px;box-shadow:0 6px 18px #0f1f1d33;font-size:13px}.tooltip b{display:block;font:700 15px/1.3 var(--serif);margin-bottom:2px}
 .toast{position:fixed;z-index:9;bottom:16px;left:50%;transform:translateX(-50%);background:var(--tip);color:#f3f8f6;padding:7px 13px;border-radius:6px;font-size:12px;pointer-events:none;max-width:calc(100vw - 25px)}
 .review{min-height:100dvh;padding:clamp(20px,6vw,64px) 16px 24px}.review-inner{margin:auto;max-width:650px}.review-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px}.review-head h1{font-size:21px;margin:0}.review-card{background:var(--paper);border:1px solid var(--line);padding:clamp(18px,4vw,35px);border-radius:11px;box-shadow:0 1px 2px #2a241a0a,0 12px 32px #2a241a0d}.review-card h2{font:700 clamp(31px,6vw,48px)/1.15 var(--serif);margin:0 0 15px;overflow-wrap:anywhere}.review-card h3{font-size:16px;margin:0 0 5px}.review-tools,.rating{display:flex;gap:7px;flex-wrap:wrap}.review-hint{font:19px/1.6 var(--serif);margin:13px 0;color:var(--ink)}.review-answer{margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}.review-answer p{margin:0 0 8px}.review-results{list-style:none;padding:0}.review-results li{padding:6px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}.review-results b{font-family:var(--serif);font-size:16px}
-@media (max-width:780px){.workspace{grid-template-columns:minmax(0,1fr) 8px minmax(228px,33vw)}.paper{padding-right:50px;padding-left:19px}.paragraph .english{font-size:17px}.divider:after{left:3px}}
+@media (max-width:780px){.workspace{grid-template-columns:minmax(0,1fr) var(--gutter) var(--aside,max(228px,33vw))}.paper{padding-right:50px;padding-left:19px}.paragraph .english{font-size:17px}}
 @media (max-width:570px){.workspace{grid-template-columns:1fr;grid-template-rows:minmax(0,68fr) minmax(0,32fr)}.divider{display:none}.inspector{border-top:1px solid var(--line);padding:12px 18px}.paper{padding-top:15px}.paragraph .english{font-size:16px}}
 
 /* Quiet section colors. Labels carry the meaning even when the colors look alike. */
@@ -83,6 +100,27 @@
 .explain h3,.inspector .explain h3 {color:var(--section-ink);font-size:12px;margin:0 0 4px}
 .explain p:last-child,.inspector .explain p:last-child {margin-bottom:0}
 .inspector .explain .definition {color:var(--section-ink);margin:0;line-height:1.6}
+.inspector .analysis-block{--analysis-ink:#345576}
+.inspector .analysis-block .sentence-title{
+  padding-inline-start:11px;border-inline-start:2px solid #627b9b;
+  color:#263e58;font-size:clamp(16px,1.6vw,20px);line-height:1.4;margin:1px 0 14px;
+}
+.inspector .analysis-block .explain{
+  background:transparent;box-shadow:none;border-radius:0;
+  border:0;border-block-start:1px solid var(--line);padding:8px 0 3px;margin:6px 0 0;
+}
+.inspector .analysis-block .explain h3{margin-bottom:6px;letter-spacing:.055em}
+.inspector .analysis-block [data-topic="chunks"]{--section-ink:var(--analysis-ink)}
+.analysis-block .chunk-row{padding:4px 0 5px}
+.analysis-block .chunk-row+.chunk-row{border-top:1px solid #e9e3db}
+.analysis-block .chunk-row dt{margin-top:0}
+.chunk-link{
+  border:0;background:transparent;min-height:25px;padding:2px 6px;margin-inline-start:-6px;
+  text-align:start;color:var(--analysis-ink);border-radius:3px;font:inherit;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:#98acc6;
+}
+.chunk-link:is(:hover,[aria-pressed="true"]){background:#dde6f2;text-decoration-color:var(--analysis-ink)}
+.chunk-link[aria-pressed="true"]{box-shadow:inset 2px 0 var(--analysis-ink)}
 .word,.paragraph .sentence {transition:background-color 145ms var(--settle),box-shadow 145ms var(--settle)}
 .motion-clipping {overflow:hidden}
 .tooltip {min-width:0;padding:5px 9px;font-size:12px;line-height:1.5}
@@ -196,6 +234,18 @@
 .lookup-parts,.review-filters {display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
 .review-filters button[aria-pressed="true"] {border-color:var(--green);color:var(--green);background:var(--pale)}
 .review-mask {margin:12px 0;min-height:50px;width:100%;text-align:left}
+.review-mask#reveal-answer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 13px}
+.review-mask#reveal-answer::after{content:"";width:9px;height:9px;border:solid currentColor;border-width:0 1px 1px 0;transform:rotate(45deg);margin:0 3px 3px 0}
+.review-mask#reveal-answer[aria-expanded="true"]::after{transform:rotate(225deg);margin-block:4px 0}
+.review-card{scroll-margin-top:16px}
+.review-reply{position:relative;display:flow-root}
+.review-reply .review-answer{margin-top:0;padding-top:6px}
+.review-paper-screen{
+  position:absolute;inset:0;pointer-events:none;transform-origin:right center;
+  border-inline-start:1px solid #d2bd9f;border-radius:4px;
+  background:linear-gradient(90deg,#ece0cd,#f6efe3 9%,#f9f2e7 87%,#eee2d0);
+  box-shadow:-7px 0 16px #533b2426;
+}
 .toast {bottom:62px}
 .study-clock {gap:6px;color:var(--ink-soft);padding:3px 5px 3px 9px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .clock-dot {width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--line-strong)}
@@ -206,14 +256,21 @@
 .tooltip {
   --peek-nub:15px;z-index:10;transform-origin:var(--peek-nub) 0;
   max-width:min(330px,calc(100vw - 20px));
+  background:#23433f;color:#fffdf4;border:1px solid #42655b;border-radius:5px;
+  padding:8px 11px;box-shadow:0 2px 3px #222d2818,0 8px 20px #26383125;
 }
 .tooltip::before {
   content:"";position:absolute;left:var(--peek-nub);top:-3px;
   width:7px;height:7px;background:inherit;transform:translateX(-50%) rotate(45deg);
 }
-.tooltip .peek-senses {display:inline;overflow-wrap:anywhere}
-.tooltip .peek-sense {display:inline-block;max-width:100%;vertical-align:top}
-.tooltip .peek-pos {font-size:10px;color:#b8dace;margin-right:3px}
+.peek-senses {display:inline;overflow-wrap:anywhere}
+.peek-sense {display:inline-block;max-width:100%;vertical-align:top}
+.peek-pos {font-size:10px;margin-right:3px}
+.tooltip .peek-pos{color:#b8dace}
+.tooltip[data-compact]{padding:4px 8px;white-space:nowrap}
+.peek-dock{padding:7px 9px;margin:0 0 12px;border-inline-start:2px solid #508374;background:#e5eee8;color:#24493d;font-size:12px}
+.peek-dock b{margin-inline-end:8px;font:700 15px var(--serif)}
+.peek-dock .peek-pos{color:#386a5d}
 .lex-senses {margin:0;padding:0 0 0 20px;font-size:13px;line-height:1.5}
 .lex-senses li+li {margin-top:7px;padding-top:7px;border-top:1px solid var(--line)}
 .lex-senses .lex-pos {color:var(--green);font-size:11px;margin-right:5px}
@@ -284,6 +341,8 @@
   .match-option {padding-inline:6px}
 }
 @media (pointer:coarse) {
+  .workspace{--gutter:22px}
+  .chunk-link{min-height:36px}
   .para-actions button {min-height:33px}
   .review-float,#mark-entry {min-height:40px}
   .anchor-float {bottom:calc(var(--float-inset) + 100px)}
@@ -325,6 +384,7 @@
     <div class="divider" id="divider" tabindex="0" role="separator" aria-label="调整详解栏宽度" aria-orientation="vertical"></div>
     <aside class="inspector" id="inspector" aria-label="详细解释">
       <header class="inspect-title"><span>详解</span><small id="inspect-kind"></small></header>
+      <div class="peek-dock" id="peek-dock" role="status" hidden></div>
       <div id="inspect-content"><p class="muted">点正文中的单词查看用法。想拆一句时，点段落右侧的「选句」。</p></div>
     </aside>
   </div>
@@ -460,6 +520,7 @@ const byWord = new Map(), byParagraph = new Map(), bySentence = new Map(), bySen
 let customDictionary = new Map();
 let drawTapeLayer, drawQuestionTape;
 let picking = null, activeLookup = null, completed = false;
+let lookupWords = [], inspectedSentence = null, inspectedChunk = null;
 let readingPointer = null, selectionGesture = false, skipPairedDoubleClick = false;
 let reviewCard = null, hint = false, answer = false, toastTimer;
 let reviewFilter = "all";
@@ -480,7 +541,10 @@ function renderMaterial(id) {
   if (!next) return false;
   material = next;
   customDictionary = importedDictionary(next);
-  picking = null; activeLookup = null;
+  picking = null;
+  closePeek(true,true);
+  setLookup(null);
+  setInspectedSentence(null);
   readingPointer = null; selectionGesture = false; skipPairedDoubleClick = false;
   byWord.clear(); byParagraph.clear(); bySentence.clear(); bySentencePosition.clear();
   passages.clear();
@@ -629,10 +693,11 @@ function flash(message) {
     duration:140,after:() => {toast.hidden = true;},
   }),2200);
 }
-let peekTimer, peekRevealScroll = null;
-function closePeek(immediate = false) {
+let peekTimer, peekAnchor, peekNormal, peekCompact;
+function closePeek(immediate = false, clearDock = false) {
   clearTimeout(peekTimer);
-  peekRevealScroll = null;
+  peekAnchor = null;
+  if (clearDock) get("peek-dock").hidden = true;
   const peek = get("peek");
   if (immediate || reduceMotion.matches) {
     stopEffect(peek);
@@ -646,53 +711,56 @@ function closePeek(immediate = false) {
     });
   }
 }
-function showPeek(target, anchor) {
+function placePeek(animate = false) {
+  if (!peekAnchor) return;
   const peek = get("peek");
-  const previous = peek.hidden || reduceMotion.matches ? null : peek.getBoundingClientRect();
-  const previousOpacity = previous ? Number(getComputedStyle(peek).opacity) : 0;
-  delete peek.dataset.hiding;
-  stopEffect(peek);
-  const item = dictionaryEntry(target);
-  const senses = peekDefinitions(item).map(([pos,zh]) =>
-    '<span class="peek-sense">' + (pos ? '<span class="peek-pos">' + esc(pos) + '</span> ' : '') +
-    esc(zh) + '</span>').join(" · ");
-  peek.innerHTML = '<b lang="en">' + esc(item?.head || target.text) + "</b>" +
-    '<span class="peek-senses">' + (senses || "本地词表暂无收录") + '</span>';
-  peek.hidden = false;
-  clearTimeout(peekTimer);
-  peekTimer = setTimeout(closePeek,item?.senses.length > 2 ? 4400 : 3100);
-  const lastLine = () => [...anchor.getClientRects()].filter((box) => box.width > 0).at(-1) || anchor.getBoundingClientRect();
-  let rect = lastLine();
-  const reader = get("reader");
-  const pane = reader.getBoundingClientRect();
-  peek.style.maxWidth = Math.min(340,Math.max(1,pane.width - 16))+"px";
-  const width = peek.offsetWidth, height = peek.offsetHeight;
-  const bottom = Math.min(window.innerHeight,pane.bottom) - 8;
-  const belowGap = 8;
-  const needed = rect.bottom + belowGap + height - bottom;
-  if (needed > 0) {
-    const before = reader.scrollTop;
-    reader.scrollTop += Math.ceil(needed);
-    if (reader.scrollTop !== before) {
-      peekRevealScroll = reader.scrollTop;
-      rect = lastLine();
-    }
-  }
-  const left = Math.max(pane.left + 8, Math.min(rect.left, pane.right - width - 8));
-  const top = rect.bottom+belowGap;
-  if (top + height > Math.min(window.innerHeight,pane.bottom)) {
+  const dock = get("peek-dock");
+  const rect = [...peekAnchor.getClientRects()].filter((box) => box.width > 0).at(-1);
+  const pane = get("reader").getBoundingClientRect();
+  if (!rect || rect.bottom <= pane.top || rect.top >= pane.bottom) {
     closePeek(true);
     return;
   }
+  delete peek.dataset.hiding;
+  stopEffect(peek);
+  delete peek.dataset.compact;
+  peek.innerHTML = peekNormal;
+  peek.hidden = false;
+  peek.style.maxWidth = Math.min(340,Math.max(1,pane.width - 16))+"px";
+  const top = rect.bottom + 8;
+  const room = Math.min(window.innerHeight,pane.bottom) - 8 - top;
+  if (room < peek.offsetHeight) {
+    peek.dataset.compact = "";
+    peek.innerHTML = peekCompact;
+  }
+  if (room < peek.offsetHeight || peek.scrollWidth > peek.clientWidth + 1) {
+    peek.hidden = true;
+    dock.innerHTML = peekNormal;
+    dock.hidden = false;
+    if (animate) smoothIn(dock,{distance:0,opacity:.7,duration:150});
+    return;
+  }
+  dock.hidden = true;
+  const width = peek.offsetWidth;
+  const left = Math.max(pane.left + 8, Math.min(rect.left, pane.right - width - 8));
   const nub = Math.max(8,Math.min(width-8,rect.left+rect.width/2-left));
   peek.style.setProperty("--peek-nub",nub+"px");
   Object.assign(peek.style,{left:left+"px",top:top+"px"});
-  const dx = previous ? previous.left-left : 0;
-  const dy = previous ? previous.top-top : 0;
-  const nearby = previous && Math.abs(dx) < 145 && Math.abs(dy) < 24;
-  const from = nearby ? {opacity:Math.max(.56,previousOpacity),transform:"translate("+dx+"px,"+dy+"px)"} :
-    {opacity:.34,transform:"translateY(-4px) scale(.985)"};
-  playEffect(peek,[from,{opacity:1,transform:"none"}],{duration:nearby ? 135 : 170});
+  if (animate) playEffect(peek,[{opacity:.83,transform:"translateY(-3px) scale(.97)"},
+    {opacity:1,transform:"none"}],{duration:165});
+}
+function showPeek(target, anchor, item) {
+  const senses = peekDefinitions(item).map(([pos,zh]) =>
+    '<span class="peek-sense">' + (pos ? '<span class="peek-pos">' + esc(pos) + '</span> ' : '') +
+    esc(zh) + '</span>');
+  const head = '<b lang="en">' + esc(item?.head || target.text) + "</b>";
+  const summary = (meaning) => head + '<span class="peek-senses">' + (meaning || "本地词表暂无收录") + '</span>';
+  peekNormal = summary(senses.join(" · "));
+  peekCompact = summary(senses[0]);
+  peekAnchor = anchor;
+  placePeek(true);
+  clearTimeout(peekTimer);
+  if (peekAnchor) peekTimer = setTimeout(closePeek,item?.senses?.length > 2 ? 4400 : 3100);
 }
 function makeTarget(sentence, start, end, entry) {
   const first = sentence.words[start], last = sentence.words[end];
@@ -809,11 +877,22 @@ function markState() {
       target.sourceText === bySentence.get(token.sentence).display &&
       target.start <= token.index && token.index <= target.end;
     el.classList.toggle("marked",positions.some(covers));
-    el.classList.toggle("current",covers(activeLookup));
   }
   const due = groupCards(marks.values()).filter((card) => isDue(card.key)).length;
   get("review-count").textContent = due;
   get("review-tab").setAttribute("aria-label",due ? "复习，" + due + " 项到期" : "复习");
+}
+function setLookup(target) {
+  for (const word of lookupWords) word.classList.remove("current");
+  activeLookup = target;
+  lookupWords = [];
+  if (!target || target.sourceText !== bySentence.get(target.sentence)?.display) return;
+  for (let index = target.start; index <= target.end; index++) {
+    const word = bySentencePosition.get(target.sentence+":"+index);
+    if (!word) continue;
+    word.classList.add("current");
+    lookupWords.push(word);
+  }
 }
 function toggleMark(target) {
   const key = markKey(target);
@@ -945,13 +1024,12 @@ function englishDetails(item) {
 }
 function updateInspector(html, animate) {
   const content = get("inspect-content");
-  if (!animate) stopEffect(content);
+  stopEffect(content);
   content.innerHTML = html;
-  if (animate) smoothIn(content,{distance:2,opacity:.68,duration:155});
+  if (animate) smoothIn(content,{distance:0,opacity:.86,duration:155});
 }
-function renderLookup(animate = false) {
+function renderLookup(animate = false, item = dictionaryEntry(activeLookup)) {
   const target = activeLookup;
-  const item = dictionaryEntry(target);
   const companion = findCompanion(target);
   const {selected,merge} = adjacentTapes(target);
   const sentence = bySentence.get(target.sentence);
@@ -990,12 +1068,67 @@ function renderLookup(animate = false) {
 }
 function showLookup(target, anchor) {
   startCurrentPassage();
-  activeLookup = target;
-  if (anchor) showPeek(target,anchor);
-  else closePeek();
-  markState();
+  setInspectedSentence(null);
+  setLookup(target);
   get("inspector").scrollTop = 0;
-  renderLookup(true);
+  const item = dictionaryEntry(target);
+  if (anchor) showPeek(target,anchor,item);
+  else closePeek(false,true);
+  renderLookup(true,item);
+}
+function setInspectedSentence(element) {
+  if (inspectedSentence) {
+    inspectedSentence.removeAttribute("data-inspected");
+    inspectedSentence.closest(".paragraph")?.querySelector("[data-pick]")?.removeAttribute("data-has-note");
+  }
+  setInspectedChunk(null);
+  inspectedSentence = element;
+  if (element) {
+    element.dataset.inspected = "";
+    const trigger = element.closest(".paragraph")?.querySelector("[data-pick]");
+    if (trigger) trigger.dataset.hasNote = "";
+  }
+}
+let chunkWords = [];
+function setInspectedChunk(button) {
+  inspectedChunk?.setAttribute("aria-pressed","false");
+  for (const word of chunkWords) word.removeAttribute("data-chunk-highlight");
+  chunkWords = [];
+  CSS.highlights?.delete("judu-chunk");
+  inspectedChunk = button;
+  if (!button) return;
+  button.setAttribute("aria-pressed","true");
+  const id = inspectedSentence.dataset.sentence;
+  for (let index = Number(button.dataset.chunkStart); index <= Number(button.dataset.chunkEnd); index++) {
+    const word = bySentencePosition.get(id+":"+index);
+    if (!word) continue;
+    chunkWords.push(word);
+  }
+  if (chunkWords.length && CSS.highlights && typeof Highlight === "function") {
+    const range = document.createRange();
+    range.setStartBefore(chunkWords[0]);
+    range.setEndAfter(chunkWords.at(-1));
+    CSS.highlights.set("judu-chunk",new Highlight(range));
+  } else {
+    for (const word of chunkWords) word.dataset.chunkHighlight = "";
+  }
+}
+function renderSentenceChunks(sentence) {
+  const keys = sentence.words.map(({text}) => norm(text));
+  return '<dl>' + sentence.chunks.map((chunk) => {
+    const parts = tokensFor(chunk.en).map(({text}) => norm(text));
+    const matches = [];
+    for (let index = 0; parts.length && index <= keys.length - parts.length; index++) {
+      const end = index + parts.length - 1;
+      if (parts.every((word,offset) => keys[index+offset] === word) &&
+          !sentence.display.slice(sentence.words[index].char,sentence.words[end].char).includes("___")) matches.push(index);
+    }
+    const start = matches[0];
+    const english = matches.length === 1 ?
+      '<button type="button" class="chunk-link" aria-pressed="false" data-chunk-start="' + start +
+      '" data-chunk-end="' + (start+parts.length-1) + '">' + esc(chunk.en) + '</button>' : esc(chunk.en);
+    return '<div class="chunk-row"><dt lang="en">' + english + '</dt><dd>' + esc(chunk.zh) + '</dd></div>';
+  }).join("") + '</dl>';
 }
 function selectParagraph(number) {
   picking = picking === number ? null : number;
@@ -1025,8 +1158,11 @@ function inspectSentence(sentence) {
   const focusButton = get("passage").querySelector('[data-pick="'+sentence.paragraph+'"]');
   window.getSelection()?.removeAllRanges();
   startCurrentPassage();
-  selectParagraph(null); closePeek(); activeLookup = null;
-  markState();
+  selectParagraph(null);
+  closePeek(true,true);
+  setLookup(null);
+  const origin = get("passage").querySelector('[data-sentence="'+CSS.escape(sentence.id)+'"]');
+  setInspectedSentence(origin);
   get("inspector").scrollTop = 0;
   get("inspect-kind").textContent = "句子解析";
   const title = '<div class="analysis-block"><h2 class="sentence-title" lang="en">' + renderText(sentence.display) + '</h2>';
@@ -1040,8 +1176,7 @@ function inspectSentence(sentence) {
   const text = sentence.en === sentence.display ? title :
     '<div class="analysis-block"><h2 class="sentence-title" lang="en">' + renderText(sentence.en) + '</h2>';
   updateInspector(text +
-    (sentence.chunks?.length ? explanation("chunks","意群对照",'<dl>' + sentence.chunks.map((c) =>
-      '<dt lang="en">' + esc(c.en) + "</dt><dd>" + esc(c.zh) + "</dd>").join("") + '</dl>') : "") +
+    (sentence.chunks?.length ? explanation("chunks","意群对照",renderSentenceChunks(sentence)) : "") +
     (sentence.grammar || sentence.gist ? explanation("structure","结构与指代",
       '<p>' + esc(sentence.grammar || sentence.gist) + '</p>' +
       (sentence.gist && sentence.grammar ? '<p>' + esc(sentence.gist) + '</p>' : "")) : "") +
@@ -1065,6 +1200,10 @@ function inspectSentence(sentence) {
   }
   if (focusWasInside) focusButton?.focus({preventScroll:true});
 }
+get("inspect-content").addEventListener("click",(event) => {
+  const button = event.target.closest(".chunk-link");
+  if (button && inspectedSentence) setInspectedChunk(button === inspectedChunk ? null : button);
+});
 
 function contextualTargets(sentence) {
   const candidates = [];
@@ -1172,7 +1311,7 @@ get("reader").addEventListener("dblclick",(event) => {
   if (skipPairedDoubleClick) { skipPairedDoubleClick = false; return; }
   if (selectionGesture || picking !== null) return;
   const {sentence,index} = byWord.get(word.dataset.token);
-  closePeek();
+  closePeek(true,true);
   event.preventDefault();
   window.getSelection()?.removeAllRanges();
   toggleMark(wordTarget(bySentence.get(sentence),index));
@@ -1197,13 +1336,9 @@ document.addEventListener("pointerdown",(event) => {
 });
 document.addEventListener("click",animateDetails);
 get("reader").addEventListener("scroll",() => {
-  if (peekRevealScroll !== null && Math.abs(get("reader").scrollTop-peekRevealScroll) < 1) {
-    peekRevealScroll = null;
-    return;
-  }
-  closePeek();
+  if (divider.dataset.dragging === undefined) closePeek();
 },{passive:true});
-window.addEventListener("resize",() => closePeek(true),{passive:true});
+window.addEventListener("resize",() => placePeek(),{passive:true});
 
 function finishPassage() {
   if (completed) {
@@ -1357,24 +1492,31 @@ function renderReview() {
     (source ? '<p class="muted">' + esc(source.exam + " · " + source.info.label) + '</p>' : '');
   const tools = '<div class="review-tools"><button class="ghost" id="show-hint" aria-expanded="'+hint+'">'+(hint?'收起原句':'看原句')+'</button>' +
     (source ? '<button class="plain" id="review-source">回原文 ↗</button>' : '') + '</div>';
-  const original = hint ? '<p class="review-hint" lang="en">' + reviewSentence(target) + '</p>' : '';
-  const item = answer && !entry?.meaning ? dictionaryEntry(target) : null;
+  const original = '<p class="review-hint" id="review-original" lang="en"' + (hint ? '' : ' hidden') + '>' +
+    reviewSentence(target) + '</p>';
+  const item = entry?.meaning ? null : dictionaryEntry(target);
   const curtain = '<button type="button" class="ghost review-mask" id="reveal-answer" aria-controls="review-answer-content" aria-expanded="' +
     answer + '">' + (answer ? "遮住中文" : "想一想，再揭开中文") + '</button>';
-  const response = answer ? '<div class="review-answer" id="review-answer-content">' +
+  const response = '<div class="review-reply" id="review-reply"><div class="review-answer" id="review-answer-content"' +
+    (answer ? '' : ' hidden inert') + '>' +
     (entry?.meaning ? explanation("meaning","语境释义",'<p><b>' + esc(entry.meaning) + '</b></p>') :
       explanation("meaning","常用义项",dictionarySenses(item)) + wordFormsPanel(item)) +
     entryExtras(entry) +
-    '<div class="rating">'+Object.entries(schedule).map(([key,value])=>'<button class="ghost" data-rating="'+key+'" data-memory="'+key+'">'+value.label+'</button>').join("")+'</div></div>' :
-    '<div id="review-answer-content" hidden></div>';
+    '<div class="rating">'+Object.entries(schedule).map(([key,value])=>'<button class="ghost" data-rating="'+key+'" data-memory="'+key+'">'+value.label+'</button>').join("")+'</div></div>' +
+    '<span id="review-cover" class="review-paper-screen" aria-hidden="true" hidden></span></div>';
   get("review-body").innerHTML = header+'<div class="review-card">'+heading+tools+original+curtain+response+'</div>';
-  get("show-hint").onclick = () => { hint=!hint; transitionReview(".review-hint"); get("show-hint").focus({preventScroll:true}); };
-  if (get("review-source")) get("review-source").onclick = () => openReviewSource(target);
-  get("reveal-answer").onclick = () => {
-    answer=!answer; transitionReview(".review-answer");
-    get("reveal-answer").focus({preventScroll:true});
+  const hintButton = get("show-hint");
+  hintButton.setAttribute("aria-controls","review-original");
+  hintButton.onclick = () => {
+    hint = !hint;
+    hintButton.textContent = hint ? "收起原句" : "看原句";
+    hintButton.setAttribute("aria-expanded",String(hint));
+    revealBlock(get("review-original"),hint);
   };
+  if (get("review-source")) get("review-source").onclick = () => openReviewSource(target);
+  get("reveal-answer").onclick = () => showReviewAnswer(!answer);
   for (const b of get("review-body").querySelectorAll("[data-rating]")) b.onclick = () => {
+    if (!answer || card !== reviewCard) return;
     const score = b.dataset.rating;
     if (score === "again" && !previouslyRetried.has(card.key)) {
       postponed.add(card.key);
@@ -1389,22 +1531,51 @@ function renderReview() {
     markState();
     saveReading();
     if (activeLookup) renderLookup();
-    changeReviewCard(null); transitionReview();
+    changeReviewCard(null); transitionReview(true);
     get("show-hint")?.focus({preventScroll:true});
   };
 }
-function transitionReview(section) {
-  const body = get("review-body");
-  const from = body.querySelector(".review-card")?.getBoundingClientRect().height;
-  renderReview();
-  const card = body.querySelector(".review-card");
-  if (!card || !from) return;
-  const to = card.getBoundingClientRect().height;
-  if (section && Math.abs(to-from) <= 360) {
-    resizeContent(card,from,to,undefined,{duration:to > from ? 175 : 145});
+function showReviewAnswer(open) {
+  const button = get("reveal-answer");
+  const frame = get("review-reply");
+  const content = get("review-answer-content");
+  const cover = get("review-cover");
+  answer = open;
+  button.textContent = open ? "遮住中文" : "想一想，再揭开中文";
+  button.setAttribute("aria-expanded",String(open));
+  content.inert = !open;
+  content.setAttribute("aria-hidden",String(!open));
+  if (reduceMotion.matches || !frame.animate) {
+    stopEffect(frame);
+    stopEffect(cover);
+    frame.classList.remove("motion-clipping");
+    cover.hidden = true;
+    content.hidden = !open;
+    return;
   }
-  const entering = section ? card.querySelector(section) : card;
-  if (entering) smoothIn(entering,{distance:section ? 3 : 5,opacity:.58,duration:175});
+  const from = frame.getBoundingClientRect().height;
+  const shown = {transform:"scaleX(.02)",opacity:0};
+  const masked = {transform:"scaleX(1)",opacity:1};
+  const current = cover.hidden ? (open ? masked : shown) : {
+    transform:getComputedStyle(cover).transform,opacity:getComputedStyle(cover).opacity,
+  };
+  stopEffect(frame);
+  content.hidden = false;
+  cover.hidden = false;
+  playEffect(cover,[current,open ? shown : masked],{duration:open ? 230 : 149,after:() => { cover.hidden = true; }});
+  const to = open ? frame.getBoundingClientRect().height : 0;
+  resizeContent(frame,from,to,() => { content.hidden = !open; },{duration:open ? 212 : 149});
+}
+function transitionReview(advance = false) {
+  renderReview();
+  const card = get("review-body").querySelector(".review-card");
+  if (!card) return;
+  if (advance && card.getBoundingClientRect().top < 12) card.scrollIntoView({block:"start",behavior:"instant"});
+  if (advance) playEffect(card,[
+    {transform:"translate(17px,10px) scale(.984)",opacity:.72},
+    {transform:"translate(0,0) scale(1)",opacity:1},
+  ],{duration:255});
+  else smoothIn(card,{distance:5,opacity:.78,duration:175});
 }
 get("review-body").addEventListener("click",(event) => {
   const filter = event.target.closest("[data-review-filter]");
@@ -1544,7 +1715,7 @@ function showPage(page) {
     if (kind === page) get(kind+"-tab").setAttribute("aria-current","page");
     else get(kind+"-tab").removeAttribute("aria-current");
   }
-  closePeek(true); selectParagraph(null);
+  closePeek(true,true); selectParagraph(null);
   window.scrollTo(0,0);
   if (page === "review") {
     markState();
@@ -1559,6 +1730,7 @@ function showPage(page) {
     smoothIn(get("library").querySelector(".library-inner"),{distance:5,duration:175});
   } else {
     get("reader").scrollTop = savedReadingScroll;
+    restoreAside();
     refreshTapes();
   }
 }
@@ -1690,35 +1862,110 @@ library.addEventListener("drop",(event) => {
 });
 
 const divider = get("divider");
+const asideStorage = "judu-reader.aside-ratio";
+let asideRatio = readLocal(asideStorage,null);
+let dividerDrag, asideFrame = 0;
 if (typeof ResizeObserver === "function") {
   const observer = new ResizeObserver(() => refreshTapes());
   observer.observe(get("passage"));
   observer.observe(get("questions"));
 }
-function setAside(width) {
-  const w = get("workspace").clientWidth;
-  const px = Math.max(240,Math.min(Math.min(520,Math.round(w*.54)),width));
-  get("workspace").style.setProperty("--aside",px+"px");
+function asideLimits() {
+  const width = get("workspace").clientWidth;
+  return {width,min:width <= 780 ? 220 : 240,max:Math.min(540,Math.round(width*.54))};
+}
+function captureLine(pane, elements) {
+  const viewport = pane.getBoundingClientRect();
+  const line = viewport.top + viewport.height*.34;
+  let nearest = null, distance = Infinity;
+  for (const node of elements) {
+    const rect = node.getBoundingClientRect();
+    if (rect.height === 0 || rect.top < viewport.top || rect.top > viewport.bottom) continue;
+    const gap = Math.abs(rect.top-line);
+    if (gap >= distance) continue;
+    nearest = {pane,node,top:rect.top};
+    distance = gap;
+    if (gap < 4) break;
+  }
+  return nearest;
+}
+function captureSplitPosition() {
+  const reader = get("reader");
+  const inspector = get("inspector");
+  return [
+    captureLine(reader,lookupWords) || captureLine(reader,bySentencePosition.values()),
+    inspector.scrollTop > 0 ? captureLine(inspector,inspector.querySelectorAll("dt, h2, h3, li, p")) : null,
+  ];
+}
+function setAside(width, anchors = []) {
+  if (divider.offsetWidth === 0) return;
+  const {min,max} = asideLimits();
+  const px = Math.min(max,Math.max(min,Math.round(width)));
+  const workspace = get("workspace");
+  workspace.style.setProperty("--aside",px+"px");
+  divider.setAttribute("aria-valuemin",String(min));
+  divider.setAttribute("aria-valuemax",String(max));
   divider.setAttribute("aria-valuenow",String(px));
   divider.setAttribute("aria-valuetext","详解栏宽 "+px+" 像素");
+  for (const anchor of anchors) {
+    if (anchor?.node.isConnected) anchor.pane.scrollTop += anchor.node.getBoundingClientRect().top - anchor.top;
+  }
+  if (!dividerDrag) placePeek();
 }
-divider.onpointerdown = (e) => { if(e.button===0) divider.setPointerCapture(e.pointerId); };
-let asideFrame = 0, asidePointerX;
+function rememberAside() {
+  asideRatio = get("inspector").offsetWidth / asideLimits().width;
+  try { localStorage.setItem(asideStorage,JSON.stringify(asideRatio)); } catch {}
+}
+function restoreAside() {
+  if (typeof asideRatio === "number" && Number.isFinite(asideRatio) && asideRatio > 0) {
+    setAside(asideLimits().width*asideRatio);
+  } else {
+    setAside(get("inspector").offsetWidth);
+    get("workspace").style.removeProperty("--aside");
+  }
+}
+divider.onpointerdown = (e) => {
+  if (e.button !== 0 || dividerDrag) return;
+  e.preventDefault();
+  divider.focus({preventScroll:true});
+  dividerDrag = {id:e.pointerId,origin:e.clientX,x:e.clientX,width:get("inspector").offsetWidth,
+    anchors:captureSplitPosition()};
+  divider.dataset.dragging = "";
+  divider.setPointerCapture(e.pointerId);
+};
+function paintDivider() {
+  asideFrame = 0;
+  if (dividerDrag) {
+    const {width,origin,x,anchors} = dividerDrag;
+    setAside(width+origin-x,anchors);
+  }
+}
 divider.onpointermove = (e) => {
-  if (!divider.hasPointerCapture(e.pointerId)) return;
-  asidePointerX = e.clientX;
-  if (asideFrame) return;
-  asideFrame = requestAnimationFrame(() => {
-    asideFrame = 0;
-    setAside(get("workspace").getBoundingClientRect().right-asidePointerX-6);
-  });
+  if (dividerDrag?.id !== e.pointerId) return;
+  dividerDrag.x = e.clientX;
+  if (!asideFrame) asideFrame = requestAnimationFrame(paintDivider);
+};
+divider.onlostpointercapture = (e) => {
+  if (dividerDrag?.id !== e.pointerId) return;
+  cancelAnimationFrame(asideFrame);
+  paintDivider();
+  dividerDrag = null;
+  delete divider.dataset.dragging;
+  rememberAside();
 };
 divider.onkeydown = (e) => {
-  if (!["ArrowLeft","ArrowRight"].includes(e.key)) return;
-  e.preventDefault(); setAside(get("inspector").offsetWidth+(e.key==="ArrowLeft"?14:-14));
+  if (!["ArrowLeft","ArrowRight","Home","End"].includes(e.key)) return;
+  e.preventDefault();
+  const {min,max} = asideLimits();
+  const width = get("inspector").offsetWidth;
+  const next = {ArrowLeft:width+16,ArrowRight:width-16,Home:min,End:max}[e.key];
+  setAside(next,captureSplitPosition());
+  rememberAside();
 };
+window.addEventListener("resize",() => { if (currentPage === "read" && !dividerDrag) restoreAside(); },{passive:true});
 const restoreLastPassage = saved.last && !getMaterial(saved.last);
 renderMaterial(saved.last || sampleId) || renderMaterial(sampleId);
+restoreAside();
 refreshAnchorButton();
 void loadStoredPapers().then(() => {
   catalogue = paperCatalogue();

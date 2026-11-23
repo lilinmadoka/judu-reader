@@ -122,20 +122,25 @@ function tapeLineRects(first,last) {
 }
 
 function tapeSweep(placement,peeling,finish) {
+  const {print,lift,cast,width,height,style} = placement;
   const active = placement.effects?.[0];
   const progress = active?.effect?.getComputedTiming().progress;
+  const sample = (node) => {
+    const computed = getComputedStyle(node);
+    return {opacity:computed.opacity,transform:computed.transform};
+  };
   const previous = active ? {
-    edgeOpacity:getComputedStyle(placement.edge).opacity,
-    edgeTransform:getComputedStyle(placement.edge).transform,
-    clipPath:getComputedStyle(placement.print).clipPath,
+    lift:sample(lift),
+    cast:sample(cast),
+    clipPath:getComputedStyle(print).clipPath,
   } : null;
   placement.effects?.forEach((effect) => effect.cancel());
-  if (reduceMotion.matches || !placement.print.animate) {
+  if (reduceMotion.matches || !print.animate) {
     placement.effects = null;
     finish?.();
     return;
   }
-  const slant = Math.min(15,360/placement.width)*placement.style.slant;
+  const slant = Math.min(17,440/width)*style.slant;
   const clipAt = (x,slip) => {
     const clamp = (p) => Math.min(100,Math.max(0,p));
     return "polygon(0 0," + clamp(x+slant) + "% 0," + clamp(x+slip) +
@@ -143,33 +148,44 @@ function tapeSweep(placement,peeling,finish) {
   };
   const end = Math.abs(slant) + 5;
   const from = previous ? placement.sweepFrom + (placement.sweepTo-placement.sweepFrom)*(progress ?? 0) :
-    peeling ? 100+end : -end;
+    peeling ? 100+end : Math.max(0,Math.abs(slant)*.16);
   const to = peeling ? -end : 100+end;
-  const stages = [0,.2,.53,.81,1];
+  const stages = [0,.19,.51,.79,.94,1];
   const stops = stages.map((t) => from + (to-from)*t);
   const fraction = Math.abs(to-from)/(100+2*end);
-  const base = peeling ? 245 : 270;
-  const timing = {duration:Math.max(85,base*fraction),delay:previous ? 0 : placement.line * 37,
-    easing:peeling ? "cubic-bezier(.42,.09,.39,1)" : motionEasing,fill:"backwards"};
+  const base = (peeling ? 306 : 324) + Math.min(57,Math.sqrt(width)*4);
+  const timing = {duration:Math.max(95,base*fraction),delay:previous ? 0 : placement.line * 44,
+    easing:peeling ? "cubic-bezier(.39,.13,.48,1)" : "cubic-bezier(.29,.11,.24,1)",fill:"backwards"};
   const printing = stops.map((x,i) => ({offset:stages[i],clipPath:clipAt(x,slant*.18)}));
-  const skew = Math.atan(2*slant*placement.width/(100*placement.height));
-  const folding = stops.map((x,i) => ({
-    offset:stages[i],
-    opacity:[0,.42,.69,.35,0][i] * (peeling ? 1.15 : 1),
-    transform:"translate3d(" + (x*placement.width/100).toFixed(2) + "px,0,0) translateX(-48%) skewX(" +
-      skew + "rad) scaleX(" + (i === 2 && peeling ? 1.19 : .82) + ")",
-  }));
+  const moving = stops.map((percent,i) => {
+    const x = Math.max(0,Math.min(width,width*percent/100));
+    const length = Math.min(width*.65,26) * [0.9,1,.93,.65,.33,0][i];
+    const reach = Math.max(1,Math.min(width-x+(peeling ? 5 : 3),length));
+    const angle = (peeling ? [48,55,61,66,76,85] : [53,57,44,31,21,0])[i];
+    const skew = Math.atan(2*slant*width/(100*height));
+    const offset = stages[i];
+    return {
+      flap:{offset,opacity:(peeling ? [0,.84,.98,.9,.55,0] : [.91,.98,.94,.81,.42,0])[i],
+        transform:`translateX(${x.toFixed(2)}px) skewX(${skew}rad) perspective(85px) rotateY(-${angle}deg) scaleX(${reach/26})`},
+      shadow:{offset,opacity:(peeling ? [0,.58,.77,.73,.43,0] : [.66,.72,.57,.44,.18,0])[i],
+        transform:`translate(${(x - 2).toFixed(2)}px,${(angle*.08).toFixed(2)}px) scale(${Math.max(.13,reach/24)},.83)`},
+    };
+  });
+  const folding = moving.map(({flap}) => flap);
+  const shading = moving.map(({shadow}) => shadow);
   if (previous) {
     printing[0].clipPath = previous.clipPath;
-    folding[0] = {offset:0,opacity:previous.edgeOpacity,transform:previous.edgeTransform};
+    folding[0] = {offset:0,...previous.lift};
+    shading[0] = {offset:0,...previous.cast};
   }
-  const print = placement.print.animate(printing,timing);
-  const edge = placement.edge.animate(folding,timing);
+  const attach = print.animate(printing,timing);
+  const flap = lift.animate(folding,timing);
+  const shadow = cast.animate(shading,timing);
   placement.sweepFrom = from;
   placement.sweepTo = to;
-  placement.effects = [print,edge];
-  print.onfinish = () => {
-    if (placement.effects?.[0] !== print) return;
+  placement.effects = [attach,flap,shadow];
+  attach.onfinish = () => {
+    if (placement.effects?.[0] !== attach) return;
     placement.effects = null;
     finish?.();
   };
@@ -191,18 +207,17 @@ function createTapeLayer(layer) {
           const node = document.createElement("span");
           const print = document.createElement("span");
           const shadow = document.createElement("span");
-          const cut = document.createElement("span");
           const face = document.createElement("span");
-          const edge = document.createElement("span");
+          const lift = document.createElement("span");
+          const cast = document.createElement("span");
           node.className = "tape-placement";
           print.className = "tape-print";
           shadow.className = "tape-shadow";
-          cut.className = "tape-cut";
           face.className = "tape-face";
-          edge.className = "tape-fold";
+          lift.className = "tape-lift";
+          cast.className = "tape-cast";
           print.append(shadow,face);
-          cut.append(edge);
-          node.append(print,cut);
+          node.append(cast,print,lift);
           layer.append(node);
           const style = tapeShape(key,index);
           node.style.setProperty("--tape-outline",style.shape);
@@ -210,7 +225,7 @@ function createTapeLayer(layer) {
           node.style.setProperty("--tape-opacity",style.opacity);
           node.style.setProperty("--tape-grain-position",style.grainPosition);
           node.style.setProperty("--tape-bloom",style.bloom);
-          placement = {node,print,edge,key,style,line:index,leaving:false};
+          placement = {node,print,lift,cast,key,style,line:index,leaving:false};
           placements.set(id,placement);
         }
         const {node,style} = placement;
