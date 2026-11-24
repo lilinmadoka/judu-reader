@@ -11,7 +11,7 @@ ASSETS = (
     "index.html", "prototype-library-data.js", "prototype-library.js",
     "prototype-transfer.js", "prototype-dictionary-data.js", "prototype-cet4-data.js",
     "prototype-word-family.js", "prototype-dictionary.js", "prototype-motion.js", "prototype-tape.js",
-    "prototype-study-clock.js", "install-web.js", "manifest.webmanifest",
+    "prototype-study-clock.js", "prototype-article-review.js", "install-web.js", "manifest.webmanifest",
     "icon-192.png", "icon-512.png", "示例导入.json", "导入说明.md",
 )
 BLOCK = re.compile(r"(?<=/\* begin asset revision \*/\n).*?(?=\n/\* end asset revision \*/)", re.S)

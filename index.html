@@ -352,14 +352,68 @@
 .match-check {flex:none;color:var(--leaf-ink);min-width:12px;text-align:center;font:600 13px system-ui}
 .match-feedback {margin:12px 0 8px;min-height:24px;color:var(--green);font-size:13px}
 .match-feedback[data-result="retry"] {color:var(--coral-ink)}
+.workspace[data-article-review] .inspector{
+  background:var(--wash);padding-bottom:110px;
+}
+.workspace[data-article-review] .word {cursor:text}
+.workspace[data-article-review] .word:hover:not(.article-review-highlight){background-color:transparent}
+.workspace[data-article-review] .word.article-review-highlight{
+  background:#145c4a;color:white;outline:2px solid #145c4a;outline-offset:1px;
+  box-shadow:none;text-decoration:none;
+}
+.article-review-head{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 8px;
+  border-bottom:1px solid var(--accent-line);padding-bottom:7px;color:var(--green-deep);font-size:13px;
+}
+.article-review-head button,.article-review-links button{font-size:12px}
+.article-review-links{display:flex;flex-wrap:wrap;gap:3px 6px}
+.article-review-controls{margin:9px 0;color:var(--green-deep);font-size:12px}
+.article-review-controls summary{cursor:pointer;width:fit-content}
+.article-review-controls[open] summary{margin-bottom:7px}
+.article-review-fields{display:grid;gap:6px;padding:7px 9px;background:var(--paper);border-radius:6px;border:1px solid var(--line)}
+.article-review-fields label{display:flex;align-items:center;justify-content:space-between;gap:5px}
+.article-review-fields :is(input,select){
+  max-width:56%;min-width:0;padding:3px;font:inherit;background:var(--paper);color:var(--ink);
+  border:1px solid var(--line-strong);border-radius:4px;
+}
+.article-review-fields input{width:57px}
+#article-review-progress,#article-review-seconds{font-variant-numeric:tabular-nums}
+.article-review-timing{margin:0 0 9px;color:var(--muted);font-size:12px}
+.article-review-timing span{display:block}
+.article-review-timing progress{display:block;width:100%;height:5px;margin-top:4px;accent-color:var(--green)}
+[data-phase="feedback"] .article-review-timing progress{accent-color:var(--blue-line)}
+.article-review-body h2{margin:0 0 9px}
+.article-review-body h2[lang="en"]{font-size:clamp(25px,3vw,38px)}
+.article-review-body h2:focus{outline:none}
+.article-review-body > p{font-size:13px;line-height:1.55;margin:0 0 9px}
+.article-review-options,.article-review-feedback{display:grid;gap:5px;text-align:left}
+.article-review-option{
+  min-height:36px;width:100%;text-align:left;font-size:14px;line-height:1.35;border-radius:6px;
+  border:1px solid var(--line);background:var(--paper);padding:6px 9px;
+}
+.article-review-option:is(:hover,:focus-visible){border-color:var(--focus);background:var(--pale)}
+.article-review-forgot{color:var(--muted);border-style:dashed;background:transparent}
+.article-review-feedback{margin:0;padding:0;list-style:none}
+.article-review-feedback li{border:1px solid var(--line);border-radius:6px;background:var(--paper);padding:5px 8px;font-size:13px}
+.article-review-feedback li > div{display:flex;justify-content:space-between;align-items:baseline;gap:4px}
+.article-review-feedback li b{font:700 16px var(--serif);margin-right:.42em}
+.article-review-feedback strong{font-size:10px;white-space:nowrap}
+.article-review-feedback [data-result="correct"]{background:var(--leaf-wash);border-color:var(--leaf-line);color:var(--leaf-ink)}
+.article-review-feedback [data-result="miss"]{background:var(--coral-tint);border-color:var(--coral-line);color:var(--coral-ink)}
+.article-review-gloss{font:12px/1.35 var(--serif);color:var(--ink-soft);overflow-wrap:anywhere}
+.article-review-skipped{margin-top:10px!important}
+@media(max-width:570px) {
+  .workspace[data-article-review]{grid-template-rows:minmax(0,38fr) minmax(0,62fr)}
+  .article-review-option{min-height:39px}
+}
 @media (prefers-reduced-motion:no-preference) {
   .idle-dialog[open]::backdrop {animation:veil-in 170ms var(--settle)}
   @keyframes veil-in {from {opacity:0} to {opacity:1}}
-  .tab,.plain,.primary,.ghost,.match-option,.para-actions button {
+  .tab,.plain,.primary,.ghost,.match-option,.para-actions button,.article-review-option {
     transition:background-color 145ms var(--settle),border-color 145ms var(--settle),
       color 145ms var(--settle),transform 175ms var(--settle);
   }
-  button:is(.tab,.plain,.primary,.ghost,.match-option):active:enabled,.para-actions button:active:enabled {
+  button:is(.tab,.plain,.primary,.ghost,.match-option,.article-review-option):active:enabled,.para-actions button:active:enabled {
     transform:scale(.975);transition-duration:85ms;
   }
 }
@@ -398,7 +452,7 @@
 </div>
 <button class="tab review-float anchor-float" id="reading-anchor" type="button" disabled
   title="贴上第一张胶带后即可返回"><span aria-hidden="true">📎</span>最新贴纸</button>
-<button class="tab review-float" id="review-tab" type="button" aria-label="复习">复习<span class="count" id="review-count" aria-hidden="true">0</span></button>
+<button class="tab review-float" id="review-tab" type="button" aria-label="复习本篇" aria-controls="article-review" aria-expanded="false">复习<span class="count" id="review-count" aria-hidden="true">0</span></button>
 <main>
   <div class="workspace" id="workspace">
     <section class="reader" id="reader" aria-label="真题原文" tabindex="0">
@@ -408,7 +462,7 @@
           <div class="paper-title-row"><h1 id="paper-title">Passage Two</h1><button class="plain" id="go-questions">去答题 ↓</button></div>
           <details class="help">
             <summary>怎么试用</summary>
-            <p>点单词查常用义，双击贴上或揭下胶带。想拆一句时，点段落旁的「选句」，再点高亮的句子。贴过胶带的词可以从侧边「复习」回看。</p>
+            <p>点单词查常用义，双击贴上或揭下胶带。想拆一句时，点段落旁的「选句」，再点高亮的句子。侧边「复习」可以在原文旁练习本篇贴过胶带的词。</p>
             <p>段边书签可以把续读位置停在这一段。「阅读」回到续读位置，回形针回到最新贴纸。Aa 调整正文字号和行宽。</p>
           </details>
         </header>
@@ -419,9 +473,33 @@
     </section>
     <div class="divider" id="divider" tabindex="0" role="separator" aria-label="调整详解栏宽度" aria-orientation="vertical"></div>
     <aside class="inspector" id="inspector" aria-label="详细解释">
-      <header class="inspect-title"><span>详解</span><small id="inspect-kind"></small></header>
-      <div class="peek-dock" id="peek-dock" role="status" hidden></div>
-      <div id="inspect-content"><p class="muted">点正文中的单词查看用法。想拆一句时，点段落右侧的「选句」。</p></div>
+      <div id="inspector-reading">
+        <header class="inspect-title"><span>详解</span><small id="inspect-kind"></small></header>
+        <div class="peek-dock" id="peek-dock" role="status" hidden></div>
+        <div id="inspect-content"><p class="muted">点正文中的单词查看用法。想拆一句时，点段落右侧的「选句」。</p></div>
+      </div>
+      <div id="article-review" role="region" aria-labelledby="article-review-title" hidden>
+        <header class="article-review-head">
+          <div><strong id="article-review-title">篇内复习</strong> <small id="article-review-progress"></small></div>
+          <div class="article-review-links">
+            <button type="button" class="plain" data-article-review-action="all">全部生词</button>
+            <button type="button" class="plain" data-article-review-action="exit">退出复习</button>
+          </div>
+        </header>
+        <details class="article-review-controls" id="article-review-settings">
+          <summary>顺序与计时</summary>
+          <div class="article-review-fields">
+            <label for="article-review-order">出题顺序<select id="article-review-order"><option value="source">按原文</option><option value="shuffle">乱序</option></select></label>
+            <label for="review-answer-seconds">作答秒数<input id="review-answer-seconds" type="number" inputmode="numeric" min="1" max="120" step="1"></label>
+            <label for="review-feedback-seconds">反馈秒数<input id="review-feedback-seconds" type="number" inputmode="numeric" min="1" max="120" step="1"></label>
+          </div>
+        </details>
+        <div class="article-review-timing">
+          <span id="article-review-seconds" role="timer" hidden></span>
+          <progress id="article-review-meter" aria-hidden="true" hidden></progress>
+        </div>
+        <div class="article-review-body" id="article-review-body"></div>
+      </div>
     </aside>
   </div>
   <section class="library" id="library" aria-label="试卷库" data-archive="./archive/" hidden>
@@ -506,6 +584,7 @@
 <script src="prototype-motion.js"></script>
 <script src="prototype-tape.js"></script>
 <script src="prototype-study-clock.js"></script>
+<script src="prototype-article-review.js"></script>
 <script>
 "use strict";
 
@@ -926,9 +1005,15 @@ function markState() {
       target.start <= token.index && token.index <= target.end;
     el.classList.toggle("marked",positions.some(covers));
   }
-  const due = groupCards(marks.values()).filter((card) => isDue(card.key)).length;
-  get("review-count").textContent = due;
-  get("review-tab").setAttribute("aria-label",due ? "复习，" + due + " 项到期" : "复习");
+  const inArticle = currentPage === "read";
+  const count = inArticle ? groupCards(positions).length :
+    groupCards(marks.values()).filter((card) => isDue(card.key)).length;
+  const reviewButton = get("review-tab");
+  get("review-count").textContent = count;
+  reviewButton.setAttribute("aria-controls",inArticle ? "article-review" : "review");
+  if (inArticle) reviewButton.setAttribute("aria-expanded",String(articleReview.active()));
+  else reviewButton.removeAttribute("aria-expanded");
+  reviewButton.setAttribute("aria-label",inArticle ? "复习本篇，" + count + " 个标记" : "全部生词，" + count + " 项到期");
 }
 function setLookup(target) {
   for (const word of lookupWords) word.classList.remove("current");
@@ -1284,6 +1369,7 @@ function sentenceVocabulary(values) {
 }
 
 function lookupSelection() {
+  if (articleReview.active()) return;
   const selection = window.getSelection();
   if (!selection || selection.isCollapsed || !selection.rangeCount) return;
   const range = selection.getRangeAt(0);
@@ -1383,6 +1469,7 @@ get("reader").addEventListener("keydown",(event) => {
 });
 document.addEventListener("keydown",(event) => {
   if (event.key === "Escape") {
+    if (articleReview.close(true)) return;
     if (picking !== null && document.activeElement?.matches(".sentence")) {
       get("passage").querySelector('[data-pick="'+picking+'"]').focus();
     }
@@ -1824,7 +1911,7 @@ function flushReadingPosition(saveFirst = false) {
   const pending = Boolean(readingScrollTimer);
   clearTimeout(readingScrollTimer);
   readingScrollTimer = 0;
-  if (currentPage !== "read" || visitingSource || !material) return;
+  if (currentPage !== "read" || visitingSource || !material || articleReview.active()) return;
   if (pending || (saveFirst && startedPassages.has(material.id) && !readingPositions.has(material.id))) {
     rememberReadingWord(visibleReadingLine()?.node);
   }
@@ -1835,7 +1922,8 @@ function queueReadingPosition() {
   const top = get("reader").scrollTop;
   const forward = top > readingScrollTop;
   readingScrollTop = top;
-  if (!forward || currentPage !== "read" || visitingSource || dividerDrag || performance.now() < ignoreReadingScrollUntil) return;
+  if (!forward || currentPage !== "read" || visitingSource || articleReview.active() ||
+      dividerDrag || performance.now() < ignoreReadingScrollUntil) return;
   readingScrollTimer = setTimeout(flushReadingPosition,180);
 }
 function resumeReadingPosition() {
@@ -1855,6 +1943,7 @@ function resumeReadingPosition() {
 }
 function showPage(page) {
   if (currentPage === page) return;
+  articleReview.close();
   if (currentPage === "read" && !visitingSource) {
     flushReadingPosition(true);
     savedReadingScroll = get("reader").scrollTop;
@@ -1870,7 +1959,6 @@ function showPage(page) {
   closePeek(true,true); selectParagraph(null);
   window.scrollTo(0,0);
   if (page === "review") {
-    markState();
     renderReview();
     smoothIn(get("review-body"),{distance:5,duration:175});
   } else if (page === "match") {
@@ -1884,8 +1972,10 @@ function showPage(page) {
     restoreAside();
     refreshTapes();
   }
+  markState();
 }
 function openMaterial(id,{visit = false} = {}) {
+  articleReview.close();
   const wasReading = currentPage === "read";
   const wasVisiting = visitingSource;
   const changed = material.id !== id;
@@ -1924,9 +2014,11 @@ function renderClock({phase,visible,elapsed}) {
   if (phase === "confirm" && visible && !idleDialog.open) {
     closePeek();
     idleDialog.showModal();
+    articleReview.syncTimer();
     smoothIn(idleDialog,{distance:7,opacity:.55,duration:185});
   } else if (phase !== "confirm" && idleDialog.open) {
     idleDialog.close();
+    articleReview.syncTimer();
   }
 }
 function syncStudyClock() {
@@ -1946,7 +2038,10 @@ function setClockRunning(running) {
   renderClock(studyClock.setRunning(running,Date.now(),!document.hidden));
 }
 get("idle-continue").onclick = () => setClockRunning(true);
-get("idle-rest").onclick = () => setClockRunning(false);
+get("idle-rest").onclick = () => {
+  articleReview.close();
+  setClockRunning(false);
+};
 idleDialog.addEventListener("cancel",(event) => {
   event.preventDefault();
   setClockRunning(false);
@@ -1961,6 +2056,7 @@ document.addEventListener("scroll",registerStudyActivity,{capture:true,passive:t
 for (const event of ["wheel","touchmove"]) {
   document.addEventListener(event,registerStudyActivity,{capture:true,passive:true});
   get("reader").addEventListener(event,() => {
+    if (articleReview.active()) return;
     ignoreReadingScrollUntil = 0;
     startCurrentPassage();
   },{passive:true});
@@ -1980,7 +2076,11 @@ setInterval(syncStudyClock,300);
 for (const page of Object.keys(pageIds)) {
   get(page+"-tab").onclick = () => showPage(page);
 }
-get("read-tab").onclick = () => openMaterial(readerArticleId);
+get("read-tab").onclick = () => { if (!articleReview.close(true)) openMaterial(readerArticleId); };
+get("review-tab").onclick = () => {
+  if (currentPage !== "read") showPage("review");
+  else if (!articleReview.close(true)) articleReview.open();
+};
 const library = get("library"), upload = get("paper-upload");
 get("paper-filter").oninput = renderLibrary;
 get("paper-list").onclick = (event) => {
@@ -2091,6 +2191,7 @@ function applyAppearance(preserveLine = false) {
   restoreCapturedLine(line);
   if (preserveLine) {
     refreshTapes();
+    articleReview.align();
     placePeek();
   }
 }
@@ -2131,6 +2232,7 @@ function setAside(width, anchors = []) {
   divider.setAttribute("aria-valuenow",String(px));
   divider.setAttribute("aria-valuetext","详解栏宽 "+px+" 像素");
   anchors.forEach(restoreCapturedLine);
+  articleReview.align();
   if (!dividerDrag) placePeek();
 }
 function rememberAside() {
@@ -2193,6 +2295,7 @@ window.addEventListener("resize",() => {
   suspendReadingTracking();
   restoreAside();
 },{passive:true});
+const articleReview = createArticleReview();
 const restoreLastPassage = typeof saved.last === "string" && !getMaterial(saved.last);
 if (typeof saved.last === "string" && getMaterial(saved.last)) readerArticleId = saved.last;
 renderMaterial(readerArticleId);
